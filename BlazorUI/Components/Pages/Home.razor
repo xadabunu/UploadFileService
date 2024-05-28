@@ -1,0 +1,43 @@
+﻿@page "/"
+@inject IHttpClientFactory ClientFactory
+@inject NavigationManager NavManager
+
+<PageTitle>Home</PageTitle>
+
+<MudText Typo="Typo.h1">Hello, world!</MudText>
+
+<MudText Typo="Typo.body1">Welcome to your new app.</MudText>
+
+<MudButton
+	OnClick="CreateDemande"
+	Variant="Variant.Filled"
+	Size="Size.Large"
+	Color="Color.Tertiary"
+	Disabled="false"
+	Class="align-self-center">
+	Nouvelle Demande
+</MudButton>
+
+@code
+{
+	private async Task CreateDemande()
+	{
+		var client = ClientFactory.CreateClient();
+		
+		var result = await client.PostAsync("http://localhost:5057/demande", null);
+
+		if (!result.IsSuccessStatusCode)
+		{
+			// erreur
+		}
+		
+		var demande = await result.Content.ReadFromJsonAsync<Demande>();
+		
+		if (demande is null)
+		{
+			// erreur
+		}
+		
+		NavManager.NavigateTo($"/file/{demande.Id}");
+	}
+}

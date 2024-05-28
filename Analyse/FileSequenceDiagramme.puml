@@ -1,0 +1,30 @@
+@startuml FileSequenceDiagram
+
+participant BlazorUI
+participant API
+participant WorkerService
+participant Database
+participant FileSystem
+
+== Déposant ajoute un Document ==
+
+BlazorUI -> API : upload(file, metadata)
+
+API -> FileSystem : moveToTemporary(file)
+API -> Database : write(metadata)
+API -> WorkerService : inform(fileID)
+
+WorkerService -> WorkerService : check(file)
+WorkerService -> Database : write(checkResult)
+
+alt file safe
+	WorkerService -> FileSystem : moveToPermanent(file)
+else file corrupted
+	WorkerService -> FileSystem : delete(file)
+end
+
+BlazorUI <- WorkerService : annouce(checkResult)
+
+== end ==
+
+@enduml

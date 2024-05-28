@@ -1,0 +1,100 @@
+@using BlazorUI.Application.Interfaces
+@using Microsoft.Extensions.Logging
+@inject ILogger<EpFormFile> Logger;
+@inject IDocumentRepository DocumentRepository;
+
+<MudPaper Elevation="0" Class="@GetColorClass()">
+
+	<MudStack Spacing="6" Class="pa-xs-2 pa-sm-6 my-6">
+
+		<MudFileUpload T="IBrowserFile" FilesChanged="FileChanged">
+			<ButtonTemplate>
+				<MudStack Row="true" AlignItems="AlignItems.Center">
+					<MudButton
+						HtmlTag="label"
+						Variant="Variant.Filled"
+						Color="Color.Primary"
+						for="@context.Id">
+						Choisir un fichier
+					</MudButton>
+
+					<MudInputLabel> @GetFileLabel() </MudInputLabel>
+				</MudStack>
+			</ButtonTemplate>
+		</MudFileUpload>
+
+		<MudTextField
+			T="string"
+			@bind-Value="_titreDocument"
+			Label="Titre du document"
+			Variant="Variant.Filled"/>
+
+		<MudButton
+			Variant="Variant.Filled"
+			OnClick="UploadDocument"
+			Size="Size.Large"
+			Color="Color.Tertiary"
+			Disabled="false"
+			Class="align-self-center">
+			Ajouter le document
+		</MudButton>
+
+	</MudStack>
+
+</MudPaper>
+
+@if (_files.Count > 0)
+{
+	<EpListeDocuments _files="_files"/>
+}
+
+@code
+{
+	private const long MaxFileSize = 1024 * 1024 * 3; // 3MB
+	private List<IBrowserFile> _files = [];
+	private IBrowserFile? _currentFile;
+	private string _titreDocument = "";
+
+	[Parameter] public TypeDocument TypeDocument { get; init; } = default!;
+	[CascadingParameter] public Demande Demande { get; set; }
+
+	// protected override Task OnInitializedAsync()
+	// {
+	// 	
+	// }
+
+	private void FileChanged(IBrowserFile? file)
+	{
+		if (file == null) return;
+
+		_currentFile = file;
+	}
+
+	private async void UploadDocument()
+	{
+		if (_currentFile == null) return;
+
+		var document = new Document()
+		{
+			Description = _titreDocument,
+			Nom = _currentFile.Name,
+			StatutCode = StatutDocument.EnCours.Code,
+			TypeCode = TypeDocument.Code,
+			DemandeId = Demande.Id
+		};
+
+		await DocumentRepository.Create(document, _currentFile);
+
+		_files.Add(_currentFile);
+		
+		_currentFile = null;
+		
+		StateHasChanged();
+		
+		// await réponse du worker service ?
+	}
+
+	private string GetFileLabel() => _currentFile?.Name ?? "Aucun fichier séléctionné";
+	
+	private string GetColorClass() => TypeDocument == TypeDocument.Projet ? "blue-grey lighten-5" : "";
+}

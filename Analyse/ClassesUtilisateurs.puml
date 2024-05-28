@@ -1,0 +1,31 @@
+@startuml EprolexUsers
+
+class Demandeur
+class Gestionnaire
+class Déposant
+class Demande
+class Document
+
+Demandeur : Titres : List<string>
+Demandeur : DésignerGestionnaire()
+
+Gestionnaire : DésignerDéposant()
+
+Déposant : Déposer(Document)
+
+Document : Type : string
+Document : Nom : string
+Document : Description : string?
+Document : Statut : string
+
+Demande : TitreDemandeur : string
+
+Demandeur "1" -- "1" Gestionnaire
+Demandeur "1" -- "1..*" Déposant
+Demandeur "1" -- "0..*" Demande
+
+Demande "1" -- "1..*" Document
+
+Déposant ..> Document : use
+
+@enduml

@@ -1,0 +1,27 @@
+@startuml EtatFichier
+
+state "Déposé" as dep
+state "En Cours De Validation" as enCours
+state "Validé" as val
+state "Corrompu" as corr
+state "Supprimé" as del
+state "Contenant une macro" as mac
+state "Mauvaise extension" as ext
+state "Contenant un virus" as vir
+
+[*] --> dep: Déposant ajoute le document
+
+dep --> enCours: L'API prévient le Worker Service
+
+enCours --> val: Le Worker Service ne trouve aucun danger
+val --> [*]: Le document est stocké définitivement
+
+enCours --> mac
+enCours --> ext
+enCours --> vir
+
+mac --> del
+ext --> del
+vir --> del
+
+@enduml

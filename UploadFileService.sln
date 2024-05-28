@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorUI", "BlazorUI\BlazorUI.csproj", "{77FADE43-0DCB-498D-A968-EF67D0E9E442}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "API\API.csproj", "{C16D3679-2F96-44FF-A40E-6FD3300797DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSafetyService", "FileSafetyService\FileSafetyService.csproj", "{1FCEE9EC-57E2-49A0-82E9-AB506AEBC16F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{77FADE43-0DCB-498D-A968-EF67D0E9E442}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77FADE43-0DCB-498D-A968-EF67D0E9E442}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77FADE43-0DCB-498D-A968-EF67D0E9E442}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77FADE43-0DCB-498D-A968-EF67D0E9E442}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C16D3679-2F96-44FF-A40E-6FD3300797DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C16D3679-2F96-44FF-A40E-6FD3300797DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C16D3679-2F96-44FF-A40E-6FD3300797DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C16D3679-2F96-44FF-A40E-6FD3300797DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1FCEE9EC-57E2-49A0-82E9-AB506AEBC16F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FCEE9EC-57E2-49A0-82E9-AB506AEBC16F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FCEE9EC-57E2-49A0-82E9-AB506AEBC16F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FCEE9EC-57E2-49A0-82E9-AB506AEBC16F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

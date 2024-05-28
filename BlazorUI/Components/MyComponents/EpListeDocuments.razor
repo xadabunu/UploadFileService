@@ -1,0 +1,13 @@
+<MudText Typo="@Typo.h6">@_files.Count() File@(_files.Count() == 1 ? "" : "s"):</MudText>
+    <MudList>
+        @foreach (var file in _files)
+        {
+            <MudListItem Icon="@Icons.Material.Filled.AttachFile" @key="@file">
+                @file.Name
+                <MudButton EndIcon="@Icons.Material.Filled.Delete"/>
+            </MudListItem>
+        }
+    </MudList>
+@code {
+    [Parameter] public IEnumerable<IBrowserFile> _files { get; set; } = [];
+}

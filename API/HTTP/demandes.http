@@ -1,0 +1,17 @@
+@base=http://localhost:5057
+
+### GetAll
+
+GET {{base}}/demande
+
+### CreateDemande
+
+POST {{base}}/demande
+Content-Type: application/json
+
+{
+  "numeroAttente": null,
+  "numeroRole": null
+}
+
+###

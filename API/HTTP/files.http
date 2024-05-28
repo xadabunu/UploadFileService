@@ -1,0 +1,42 @@
+@base=http://localhost:5057
+
+### GetById
+
+GET {{base}}/document/5
+
+### GetAll
+
+GET {{base}}/document
+
+### CreateDocument
+
+POST {{base}}/document
+Content-Type: application/json
+
+{
+  "typeCode": "autreDocument",
+  "nom": "encore un test",
+  "description": "",
+  "statutCode": "enCours",
+  "demandeId": 3
+}
+
+### UpdateDocument
+
+PUT {{base}}/document
+Content-Type: application/json
+
+{
+  "typeCode": "projet",
+  "nom": "test post",
+  "description": "",
+  "statutCode": "corrompu",
+  "demandeId": 1,
+  "id": 1
+}
+
+### DeleteDocument
+
+DELETE {{base}}/document/5
+
+###

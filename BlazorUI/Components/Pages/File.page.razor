@@ -1,0 +1,55 @@
+@page "/file/{id:int}"
+@inject IConfiguration config
+@inject IHttpClientFactory Factory
+@inject NavigationManager NavManager
+
+<PageTitle>Les fichiers</PageTitle>
+
+<MudText Typo="Typo.h4" Class="my-6">Téléchargez vos fichiers ici</MudText>
+
+<MudExpansionPanels MultiExpansion="true">
+
+	@if (IsLoading)
+	{
+		<MudProgressCircular Indeterminate="true"/>
+	}
+	else
+	{
+		<CascadingValue Value="@Demande">
+
+			<EpExpansionPanel TypeDocument="@TypeDocument.Projet"/>
+
+			<EpExpansionPanel TypeDocument="TypeDocument.AutreDocument"/>
+
+		</CascadingValue>
+	}
+
+</MudExpansionPanels>
+
+@code
+{
+	[Parameter] public int Id { get; set; }
+	private Demande? Demande { get; set; }
+
+	private bool IsLoading = true;
+
+	protected override async Task OnInitializedAsync()
+	{
+		var client = Factory.CreateClient("API");
+
+		var result = await client.GetAsync($"/demande/{Id}");
+
+		if (!result.IsSuccessStatusCode)
+		{
+			NavManager.NavigateTo("/");
+		}
+		else
+		{
+			await Task.Delay(500);
+			
+			var demande = await result.Content.ReadFromJsonAsync<Demande>();
+			Demande = demande;
+		}
+		IsLoading = false;
+	}
+}
