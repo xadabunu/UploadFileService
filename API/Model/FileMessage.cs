@@ -7,6 +7,7 @@ public class FileMessage : IMessage
     public int DocumentId { get; set; }
     public DateTime EnvoiDate { get; set; }
     public string Content { get; set; }
+    
     public ReadOnlyMemory<byte> Encode()
     {
         using var memoryStream = new MemoryStream();
