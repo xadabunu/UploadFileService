@@ -1,3 +1,11 @@
+global using System.Data;
 global using RabbitMQ.Client;
 global using System.Text;
+global using Dapper;
+global using FileSafetyService;
+global using FileSafetyService.EnumerationClasses;
+global using FileSafetyService.Interfaces;
+global using FileSafetyService.Repositories;
+global using FileSafetyService.Services;
+global using Microsoft.Data.SqlClient;
 global using RabbitMQ.Client.Events;

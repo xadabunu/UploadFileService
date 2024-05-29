@@ -1,5 +1,3 @@
-using FileSafetyService.Interfaces;
-
 namespace FileSafetyService.Services;
 
 public class QueueService : IQueueService

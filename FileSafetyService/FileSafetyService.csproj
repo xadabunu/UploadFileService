@@ -8,11 +8,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Dapper" Version="2.1.35" />
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0"/>
         <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Model\" />
     </ItemGroup>
 </Project>

@@ -6,7 +6,7 @@ public class FileMessage
     {
         Decode(byteMessage);
     }
-    
+
     public int Id { get; set; }
     public int DemandeId { get; set; }
     public int DocumentId { get; set; }
@@ -24,14 +24,14 @@ public class FileMessage
         Content = reader.ReadString();
     }
 
-    public override string ToString()
+    public void Display()
     {
-        return
+        Console.WriteLine(
             $"""
              demandeId: {DemandeId},
              documentId: {DocumentId},
              envoiDate: {EnvoiDate},
              content: {Content}
-             """;
+             """);
     }
 }
