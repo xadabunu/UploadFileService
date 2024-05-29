@@ -1,27 +1,28 @@
 <MudExpansionPanel IsInitiallyExpanded="true" Class="my-6">
 
-    <TitleContent>
-        <MudStack >
-                <MudText Typo="Typo.h5">@TypeDocument.Libelle</MudText>
-        </MudStack>
-    </TitleContent>
+	<TitleContent>
+		<MudStack >
+			<MudText Typo="Typo.h5">@TypeDocument.Libelle</MudText>
+		</MudStack>
+	</TitleContent>
 
-    <ChildContent>
-        
-        <EpFormFile TypeDocument="@TypeDocument"/>
+	<ChildContent>
 
-        @if (TypeDocument == TypeDocument.Projet)
-        {
-            <MudDivider Class="my-6" DividerType="DividerType.Middle"/>
+		<EpFormFile TypeDocument="@TypeDocument"/>
 
-            <MudText Typo="Typo.h6">@TypeDocument.AnnexeProjet.Libelle</MudText>
-            <EpFormFile TypeDocument="@TypeDocument.AnnexeProjet"/>
-        }
-    </ChildContent>
+		@if (TypeDocument == TypeDocument.Projet)
+		{
+			<MudDivider Class="my-6" DividerType="DividerType.Middle"/>
+
+			<MudText Typo="Typo.h6">@TypeDocument.AnnexeProjet.Libelle</MudText>
+
+			<EpFormFile TypeDocument="@TypeDocument.AnnexeProjet"/>
+		}
+	</ChildContent>
 
 </MudExpansionPanel>
 
 @code {
-    [Parameter] public TypeDocument TypeDocument { get; set; } = default!;
-    [CascadingParameter] public Demande Demande { get; set; }
+	[Parameter] public TypeDocument TypeDocument { get; set; } = default!;
+	[CascadingParameter] public Demande Demande { get; set; }
 }

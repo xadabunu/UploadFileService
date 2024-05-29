@@ -1,13 +1,25 @@
-<MudText Typo="@Typo.h6">@_files.Count() File@(_files.Count() == 1 ? "" : "s"):</MudText>
-    <MudList>
-        @foreach (var file in _files)
-        {
-            <MudListItem Icon="@Icons.Material.Filled.AttachFile" @key="@file">
-                @file.Name
-                <MudButton EndIcon="@Icons.Material.Filled.Delete"/>
-            </MudListItem>
-        }
-    </MudList>
+@inject IHttpClientFactory Factory
+
+<MudText Typo="@Typo.h6">@Documents.Count() File@(Documents.Count() == 1 ? "" : "s"):</MudText>
+<MudList>
+	@foreach (var document in Documents)
+	{
+		<MudListItem Icon="@Icons.Material.Filled.AttachFile" @key="@document">
+			@document.Nom
+			<MudButton EndIcon="@Icons.Material.Filled.Delete"/>
+		</MudListItem>
+	}
+</MudList>
+
 @code {
-    [Parameter] public IEnumerable<IBrowserFile> _files { get; set; } = [];
+	[Parameter] public IEnumerable<Document>? Documents { get; set; } = [];
+	[Parameter] public TypeDocument TypeDocument { get; set; }
+	
+	protected override async Task OnInitializedAsync()
+	{
+		var client = Factory.CreateClient();
+
+		// Documents = await client.GetFromJsonAsync<IEnumerable<Document>>("/demande");
+	}
+
 }

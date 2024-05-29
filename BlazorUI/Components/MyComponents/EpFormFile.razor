@@ -43,25 +43,20 @@
 
 </MudPaper>
 
-@if (_files.Count > 0)
+@if (Documents.Count > 0)
 {
-	<EpListeDocuments _files="_files"/>
+	<EpListeDocuments Documents="Documents" TypeDocument="TypeDocument"/>
 }
 
 @code
 {
-	private const long MaxFileSize = 1024 * 1024 * 3; // 3MB
-	private List<IBrowserFile> _files = [];
+	// private const long MaxFileSize = 1024 * 1024 * 3; // 3MB
+	private List<Document> Documents = [];
 	private IBrowserFile? _currentFile;
 	private string _titreDocument = "";
 
 	[Parameter] public TypeDocument TypeDocument { get; init; } = default!;
 	[CascadingParameter] public Demande Demande { get; set; }
-
-	// protected override Task OnInitializedAsync()
-	// {
-	// 	
-	// }
 
 	private void FileChanged(IBrowserFile? file)
 	{
@@ -85,16 +80,19 @@
 
 		await DocumentRepository.Create(document, _currentFile);
 
-		_files.Add(_currentFile);
-		
+		Documents.Add(document);
+
 		_currentFile = null;
-		
+
 		StateHasChanged();
-		
+
 		// await réponse du worker service ?
+		// 1) ouverture d'un socket ?
+		// 2) document enCours = refresh auto ?
+		//		=> dérangeant si déposant occupé
 	}
 
 	private string GetFileLabel() => _currentFile?.Name ?? "Aucun fichier séléctionné";
-	
+
 	private string GetColorClass() => TypeDocument == TypeDocument.Projet ? "blue-grey lighten-5" : "";
 }

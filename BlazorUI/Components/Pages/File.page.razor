@@ -45,11 +45,12 @@
 		}
 		else
 		{
-			await Task.Delay(500);
+			await Task.Delay(750);
 			
 			var demande = await result.Content.ReadFromJsonAsync<Demande>();
 			Demande = demande;
 		}
+		
 		IsLoading = false;
 	}
 }
