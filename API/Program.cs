@@ -1,3 +1,5 @@
+using Model.Entities;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<DapperContext>();

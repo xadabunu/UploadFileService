@@ -1,4 +1,4 @@
-namespace API.Model;
+namespace Model.Entities;
 
 public class Demande
 {

@@ -1,4 +1,4 @@
-namespace BlazorUI.Domaine.EnumerationClasses;
+namespace Model.EnumerationClasses;
 
 public class TypeDocument
 {

@@ -9,14 +9,20 @@ public class QueueService(IConnectionFactory factory) : IQueueService
         using var channel = Connection.CreateModel();
         
         channel.EPSetupProducer();
-
-        var bytesMessage = message.Encode();
+        
+        var messageStr = JsonSerializer.Serialize(message);
+        var body = Encoding.UTF8.GetBytes(messageStr);
         
         channel.BasicPublish(
             exchange: string.Empty,
             routingKey: "filesafetyqueue",
             basicProperties: null,
-            body: bytesMessage
+            body: body
         );
+    }
+
+    public void Get(IMessage message)
+    {
+        throw new NotImplementedException();
     }
 }

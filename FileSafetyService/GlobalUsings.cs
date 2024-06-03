@@ -8,4 +8,5 @@ global using FileSafetyService.Interfaces;
 global using FileSafetyService.Repositories;
 global using FileSafetyService.Services;
 global using Microsoft.Data.SqlClient;
+global using Model.Interfaces;
 global using RabbitMQ.Client.Events;

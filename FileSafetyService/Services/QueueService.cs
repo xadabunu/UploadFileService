@@ -10,7 +10,12 @@ public class QueueService : IQueueService
         _factory = factory;
         Connection = _factory.CreateConnection("localhost");
     }
-    
+
+    public void Send(IMessage message)
+    {
+        throw new NotImplementedException();
+    }
+
     public void Get(IMessage message)
     {
         throw new NotImplementedException();

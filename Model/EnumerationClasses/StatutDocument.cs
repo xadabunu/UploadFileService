@@ -1,4 +1,4 @@
-namespace API.Model.EnumerationClasses;
+namespace Model.EnumerationClasses;
 
 public class StatutDocument
 {

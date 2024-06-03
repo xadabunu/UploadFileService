@@ -1,3 +1,5 @@
+using Model.Entities;
+
 namespace API.Endpoints;
 
 public static class DemandeEndpoints

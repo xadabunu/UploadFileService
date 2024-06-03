@@ -1,4 +1,4 @@
-namespace BlazorUI.Model;
+namespace Model.Entities;
 
 public class Document
 {
@@ -9,5 +9,3 @@ public class Document
     public string StatutCode { get; set; } = string.Empty;
     public int DemandeId { get; init; }
 }
-
-
