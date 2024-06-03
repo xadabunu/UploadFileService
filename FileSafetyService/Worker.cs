@@ -7,7 +7,6 @@ public class Worker(ILogger<Worker> logger, IRepository<Document> repository) : 
         var factory = new ConnectionFactory();
 
         factory.DispatchConsumersAsync = true;
-
         factory.ConsumerDispatchConcurrency = Environment.ProcessorCount;
         
         using var connection = factory.CreateConnection("localhost");
@@ -16,6 +15,9 @@ public class Worker(ILogger<Worker> logger, IRepository<Document> repository) : 
 
         channel.EPSetupConsumer(repository);
 
-        Console.ReadKey();
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+        }
     }
 }

@@ -1,4 +1,5 @@
 using Model.Entities;
+using Model.Exceptions;
 
 namespace API.Endpoints;
 
@@ -33,7 +34,7 @@ public static class FileEndpoints
 
                 if (!System.IO.File.Exists(Path.Combine(target, file.FileName)))
                 {
-                    // error
+                    throw new UploadFileException($"Le fichier { file.FileName } n'a pas été créé.");
                 }
 
                 // envoie du message au worker service via rabbitMQ
