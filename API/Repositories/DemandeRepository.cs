@@ -50,6 +50,21 @@ public class DemandeRepository(DapperContext context): IRepository<Demande>
         return await connection.QueryAsync<Demande>(query);
     }
 
+    public async Task<IEnumerable<Demande>> GetProjetByDemandeId(int demandeId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<IEnumerable<Demande>> GetAnnexesByDemandeId(int demandeId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<IEnumerable<Demande>> GetAutresDocumentsByDemandeId(int demandeId)
+    {
+        throw new NotImplementedException();
+    }
+
     private static async Task<Demande?> SelectById(int id, IDbConnection connection)
     {
         const string query =

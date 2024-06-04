@@ -1,25 +1,29 @@
-@inject IHttpClientFactory Factory
+@inject IDocumentRepository repository
 
-<MudText Typo="@Typo.h6">@Documents.Count() File@(Documents.Count() == 1 ? "" : "s"):</MudText>
+@if (Documents.Any())
+{
+	<MudText Typo="@Typo.h6">@Documents.Count() Document@(Documents.Count() == 1 ? "" : "s"):</MudText>
+}
 <MudList>
 	@foreach (var document in Documents)
 	{
-		<MudListItem Icon="@Icons.Material.Filled.AttachFile" @key="@document">
-			@document.Nom
-			<MudButton EndIcon="@Icons.Material.Filled.Delete"/>
-		</MudListItem>
+		<EpListeDocumentsItem Document="@document" OnDelete="@OnDocumentDeleted"/>
 	}
 </MudList>
 
 @code {
-	[Parameter] public IEnumerable<Document>? Documents { get; set; } = [];
+	public IEnumerable<Document> Documents { get; set; } = [];
+	[CascadingParameter] public Demande Demande { get; set; }
 	[Parameter] public TypeDocument TypeDocument { get; set; }
-	
+
 	protected override async Task OnInitializedAsync()
 	{
-		var client = Factory.CreateClient();
-
-		// Documents = await client.GetFromJsonAsync<IEnumerable<Document>>("/demande");
+		Documents = await repository.GetDocuments(Demande.Id, TypeDocument.Code);
 	}
 
+	private async void OnDocumentDeleted()
+	{
+		Documents = await repository.GetDocuments(Demande.Id, TypeDocument.Code);
+		StateHasChanged();
+	}
 }

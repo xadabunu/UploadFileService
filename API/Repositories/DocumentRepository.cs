@@ -76,4 +76,49 @@ public class DocumentRepository(DapperContext context): IRepository<Document>
 
         return await connection.QueryAsync<Document>(query);
     }
+
+    public async Task<IEnumerable<Document>> GetProjetByDemandeId(int demandeId)
+    {
+        const string query =
+            """
+            SELECT *
+            FROM documents
+            WHERE demandeId = @demandeId
+            AND typeCode = 'projet'
+            """;
+
+        using var connection = context.CreateConnection();
+
+        return await connection.QueryAsync<Document>(query, new { demandeId });
+    }
+
+    public async Task<IEnumerable<Document>> GetAnnexesByDemandeId(int demandeId)
+    {
+        const string query =
+            """
+            SELECT *
+            FROM documents
+            WHERE demandeId = @demandeId
+            AND typeCode = 'annexeProjet'
+            """;
+
+        using var connection = context.CreateConnection();
+
+        return await connection.QueryAsync<Document>(query, new { demandeId });
+    }
+
+    public async Task<IEnumerable<Document>> GetAutresDocumentsByDemandeId(int demandeId)
+    {
+        const string query =
+            """
+            SELECT *
+            FROM documents
+            WHERE demandeId = @demandeId
+            AND typeCode = 'autreDocument'
+            """;
+
+        using var connection = context.CreateConnection();
+
+        return await connection.QueryAsync<Document>(query, new { demandeId });
+    }
 }

@@ -39,4 +39,14 @@ Content-Type: application/json
 
 DELETE {{base}}/document/5
 
-###
+### GetProjet
+
+GET {{base}}/projet/11
+
+### GetAnnexes
+
+GET {{base}}/annexeProjet/11
+
+### GetAutresDocuments
+
+GET {{base}}/autreDocument

@@ -1,0 +1,46 @@
+@inject IDocumentRepository repository
+@inject IDialogService dialogService
+
+<MudPaper Class="border-solid border-2 mud-border-primary pa-2 mb-2">
+	<MudGrid>
+		<MudItem>
+			<MudText>@GetEtatLabel()</MudText>
+			<MudText>@GetNameLabel()</MudText>
+			<MudText>@document.Nom</MudText>
+		</MudItem>
+		<MudItem Class="d-flex justify-end">
+			<MudButton
+				EndIcon="@Icons.Material.Filled.Delete"
+				OnClick="DeleteDocument"/>
+		</MudItem>
+	</MudGrid>
+</MudPaper>
+
+@code {
+	[Parameter] public Document document { get; set; }
+	[Parameter] public EventCallback<Document> OnDelete { get; set; }
+
+	private string GetEtatLabel()
+	{
+		return
+			document.StatutCode == StatutDocument.EnCours.Code ? "En cours de vérification" :
+			document.StatutCode == StatutDocument.Corrompu.Code ? "Document corrompu" :
+			"Document validé";
+	}
+
+	private string GetNameLabel() =>
+		document.Description.Length == 0 ? "Aucun nom entré par le déposant" : document.Description;
+
+	private async void DeleteDocument()
+	{
+		var result = await dialogService.ShowMessageBox(
+			"Warning",
+			"Deleting can not be undone!",
+			yesText: "Delete!", cancelText: "Cancel");
+
+		if (!(result ?? false)) return;
+		
+		await repository.Delete(document.Id);
+		await OnDelete.InvokeAsync();
+	}
+}

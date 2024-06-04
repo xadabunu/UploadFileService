@@ -58,6 +58,15 @@ public static class FileEndpoints
             await repository.Delete(id);
             return NoContent();
         });
+        
+        app.MapGet("/projet/{demandeId:int}", async (IRepository<Document> repository, int demandeId)
+            => await repository.GetProjetByDemandeId(demandeId));
+        
+        app.MapGet("/annexeProjet/{demandeId:int}", async (IRepository<Document> repository, int demandeId)
+            => await repository.GetAnnexesByDemandeId(demandeId));
+        
+        app.MapGet("/autreDocument/{demandeId:int}", async (IRepository<Document> repository, int demandeId)
+            => await repository.GetAutresDocumentsByDemandeId(demandeId));
 
         return app;
     }

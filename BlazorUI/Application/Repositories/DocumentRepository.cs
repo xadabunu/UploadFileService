@@ -1,3 +1,5 @@
+using Model.EnumerationClasses;
+
 namespace BlazorUI.Application.Repositories;
 
 public class DocumentRepository(IHttpClientFactory factory) : IDocumentRepository
@@ -26,26 +28,37 @@ public class DocumentRepository(IHttpClientFactory factory) : IDocumentRepositor
 
     public async Task<bool> Delete(int id)
     {
-        var client = factory.CreateClient();
+        var client = factory.CreateClient("API");
 
         var responseMessage = await client.DeleteAsync($"/document/{id}");
 
         return responseMessage.IsSuccessStatusCode;
     }
 
-    public async Task<Document> GetProjet(int demandeId)
+    public async Task<IEnumerable<Document>> GetProjet(int demandeId)
     {
-        throw new NotImplementedException();
+        var client = factory.CreateClient("API");
+
+        return await client.GetFromJsonAsync<IEnumerable<Document>>($"/projet/{demandeId}");
     }
 
     public async Task<IEnumerable<Document>> GetAnnexes(int demandeId)
     {
-        throw new NotImplementedException();
+        var client = factory.CreateClient("API");
+
+        return [];
     }
 
     public async Task<IEnumerable<Document>> GetAutresDocuments(int demandeId)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task<IEnumerable<Document>> GetDocuments(int demandeId, string typeDocument)
+    {
+        var client = factory.CreateClient("API");
+
+        return await client.GetFromJsonAsync<IEnumerable<Document>>($"{typeDocument}/{demandeId}");
     }
 
     private static async Task<Document> WriteToDb(HttpClient client, Document document)

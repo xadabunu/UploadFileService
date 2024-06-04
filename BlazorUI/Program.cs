@@ -23,9 +23,6 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// app.UseMiddleware<FirstMiddleware>();
-// app.UseMiddleware<SecondMiddleware>();
-
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
@@ -36,15 +33,3 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
-
-/**
- * différents points pour scanner fichier :
- *     extension
- *     macro docx
- *     antivirus => voir avec Bao ? Sinon
- *                                  a) DIY
- *                                  b) fake one
- * middleware d'exception : try catch général -> pas http donc complexe
- * filtre de validation FluentValidation
- *      (avec et sans implémentation Blazor)
- */
