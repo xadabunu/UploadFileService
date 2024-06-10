@@ -3,6 +3,10 @@
 @inject IHttpClientFactory Factory
 @inject NavigationManager NavManager
 
+@using Microsoft.AspNetCore.SignalR.Client
+@using BlazorUI.Application.Model
+@implements IAsyncDisposable
+
 <PageTitle>Les fichiers</PageTitle>
 
 <MudText Typo="Typo.h4" Class="my-6">Téléchargez vos fichiers ici</MudText>
@@ -15,12 +19,16 @@
 	}
 	else
 	{
-		<CascadingValue Value="@Demande">
+		<CascadingValue Value="@Id" Name="DemandeId">
+			<CascadingValue Value="@Message" Name="Message">
 
-			<EpExpansionPanel TypeDocument="@TypeDocument.Projet"/>
+				<EpExpansionPanel
+					TypeDocument="@TypeDocument.Projet"/>
 
-			<EpExpansionPanel TypeDocument="TypeDocument.AutreDocument"/>
+				<EpExpansionPanel
+					TypeDocument="TypeDocument.AutreDocument"/>
 
+			</CascadingValue>
 		</CascadingValue>
 	}
 
@@ -30,6 +38,9 @@
 {
 	[Parameter] public int Id { get; set; }
 	private Demande? Demande { get; set; }
+	private HubConnection? HubConnection { get; set; }
+
+	private ScanResultMessage Message { get; set; }
 
 	private bool IsLoading = true;
 
@@ -46,11 +57,44 @@
 		else
 		{
 			await Task.Delay(750);
-			
+
 			var demande = await result.Content.ReadFromJsonAsync<Demande>();
 			Demande = demande;
+
+			HubConnection = await SetupHub();
 		}
-		
+
 		IsLoading = false;
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		if (HubConnection != null)
+		{
+			await HubConnection.DisposeAsync();
+		}
+	}
+
+	private async Task<HubConnection> SetupHub()
+	{
+		HubConnection = new HubConnectionBuilder()
+			.WithUrl("http://localhost:5057/huburl")
+			.Build();
+
+		await HubConnection.StartAsync();
+
+		if (HubConnection is { State: HubConnectionState.Connected })
+		{
+			await HubConnection.InvokeAsync("JoinGroup", Demande.Id);
+		}
+
+		HubConnection.On<ScanResultMessage>("GetScanResult",
+			(newMessage) =>
+			{
+				Message = newMessage;
+				InvokeAsync(StateHasChanged);
+			});
+
+		return HubConnection;
 	}
 }

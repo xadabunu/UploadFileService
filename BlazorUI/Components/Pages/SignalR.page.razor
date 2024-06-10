@@ -1,0 +1,84 @@
+@page "/signalr"
+@using Microsoft.AspNetCore.SignalR.Client
+@implements IAsyncDisposable
+@inject NavigationManager Navigation
+
+<MudText Typo="Typo.h3">Chat</MudText>
+
+<MudText Typo="Typo.body1">User :</MudText>
+<MudInput T="string" @bind-Value="userInput"/>
+
+<MudText Typo="Typo.body1">Message :</MudText>
+<MudInput T="string" @bind-Value="messageInput"/>
+
+<MudButton
+	Variant="Variant.Filled"
+	OnClick="Send"
+	Size="Size.Large"
+	Color="Color.Tertiary"
+	Disabled="false"
+	Class="align-self-center">
+	Send
+</MudButton>
+
+<MudList>
+	@foreach (var message in messages)
+	{
+		<MudListItem>@message</MudListItem>
+	}
+</MudList>
+
+@code {
+
+	private HubConnection? HubConnection;
+	private List<string> messages = [];
+
+	private string? userInput;
+	private string? messageInput;
+
+	protected override async Task OnInitializedAsync()
+	{
+		HubConnection = new HubConnectionBuilder()
+			.WithUrl(Navigation.ToAbsoluteUri("http://localhost:5057/huburl"))
+			.Build();
+
+		await JoinGroup();
+
+		HubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+		{
+			var encodedMsg = $"{user}: {message}";
+			messages.Add(encodedMsg);
+			InvokeAsync(StateHasChanged);
+		});
+
+		await HubConnection.StartAsync();
+	}
+
+	private async Task JoinGroup()
+	{
+		if (HubConnection != null)
+		{
+			await HubConnection.InvokeAsync("JoinGroup", "GroupKey");
+		}
+	}
+
+	private async void Send()
+	{
+		if (HubConnection is not null)
+		{
+			await HubConnection.SendAsync("SendMessage", userInput, messageInput);
+		}
+	}
+
+	private bool IsConnected =>
+		HubConnection?.State == HubConnectionState.Connected;
+
+	public async ValueTask DisposeAsync()
+	{
+		if (HubConnection != null)
+		{
+			await HubConnection.DisposeAsync();
+		}
+	}
+
+}

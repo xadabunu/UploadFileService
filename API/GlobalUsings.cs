@@ -10,5 +10,10 @@ global using static Microsoft.AspNetCore.Http.Results;
 
 global using RabbitMQ.Client;
 global using API.Endpoints;
+global using API.Hubs;
 global using API.Services;
+global using FileSafetyService;
+global using Microsoft.AspNetCore.SignalR;
+global using Model.Entities;
+global using Model.Exceptions;
 global using Model.Interfaces;

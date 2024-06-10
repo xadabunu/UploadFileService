@@ -1,7 +1,7 @@
 @inject IDocumentRepository repository
 @inject IDialogService dialogService
 
-<MudPaper Class="border-solid border-2 mud-border-primary pa-2 mb-2">
+<MudContainer Class="border-solid border-2 mud-border-primary pa-2 mb-2">
 	<MudGrid>
 		<MudItem>
 			<MudText>@GetEtatLabel()</MudText>
@@ -14,19 +14,16 @@
 				OnClick="DeleteDocument"/>
 		</MudItem>
 	</MudGrid>
-</MudPaper>
+</MudContainer>
 
 @code {
 	[Parameter] public Document document { get; set; }
 	[Parameter] public EventCallback<Document> OnDelete { get; set; }
 
-	private string GetEtatLabel()
-	{
-		return
+	private string GetEtatLabel() =>
 			document.StatutCode == StatutDocument.EnCours.Code ? "En cours de vérification" :
 			document.StatutCode == StatutDocument.Corrompu.Code ? "Document corrompu" :
 			"Document validé";
-	}
 
 	private string GetNameLabel() =>
 		document.Description.Length == 0 ? "Aucun nom entré par le déposant" : document.Description;
@@ -39,7 +36,7 @@
 			yesText: "Delete!", cancelText: "Cancel");
 
 		if (!(result ?? false)) return;
-		
+
 		await repository.Delete(document.Id);
 		await OnDelete.InvokeAsync();
 	}

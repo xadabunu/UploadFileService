@@ -32,12 +32,12 @@
 			OnClick="UploadDocument"
 			Size="Size.Large"
 			Color="Color.Tertiary"
-			Disabled="false"
+			Disabled="@NoFileSelected()"
 			Class="align-self-center">
 			Ajouter le document
 		</MudButton>
-		
-		<EpListeDocuments TypeDocument="TypeDocument"/>
+
+		<EpListeDocuments TypeDocument="TypeDocument" Documents="Documents"/>
 
 	</MudStack>
 
@@ -47,12 +47,14 @@
 @code
 {
 	// private const long MaxFileSize = 1024 * 1024 * 3; // 3MB
-	private List<Document> Documents = [];
+	public List<Document> Documents { get; set; } = [];
 	private IBrowserFile? _currentFile;
 	private string _titreDocument = "";
 
 	[Parameter] public TypeDocument TypeDocument { get; init; } = default!;
-	[CascadingParameter] public Demande Demande { get; set; }
+
+	[CascadingParameter(Name = "DemandeId")]
+	public int DemandeId { get; set; }
 
 	private void FileChanged(IBrowserFile? file)
 	{
@@ -61,7 +63,7 @@
 		_currentFile = file;
 	}
 
-	private async void UploadDocument()
+	private async Task UploadDocument()
 	{
 		if (_currentFile == null) return;
 
@@ -71,24 +73,19 @@
 			Nom = _currentFile.Name,
 			StatutCode = StatutDocument.EnCours.Code,
 			TypeCode = TypeDocument.Code,
-			DemandeId = Demande.Id
+			DemandeId = DemandeId
 		};
 
-		await DocumentRepository.Create(document, _currentFile);
+		document.Id = await DocumentRepository.Create(document, _currentFile);
 
 		Documents.Add(document);
-
+		
 		_currentFile = null;
 
 		StateHasChanged();
-
-		// await réponse du worker service ?
-		// 1) ouverture d'un socket ?
-		// 2) document enCours = refresh auto ?
-		//		=> dérangeant si déposant occupé
 	}
 
+	private bool NoFileSelected() => _currentFile == null;
 	private string GetFileLabel() => _currentFile?.Name ?? "Aucun fichier séléctionné";
-
 	private string GetColorClass() => TypeDocument == TypeDocument.Projet ? "blue-grey lighten-5" : "";
 }

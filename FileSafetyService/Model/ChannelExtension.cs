@@ -1,11 +1,13 @@
+using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text.Json;
+using Model.Entities;
 
 namespace FileSafetyService;
 
 public static class ChannelExtension
 {
-    public static void EPSetupConsumer(this IModel channel, IRepository<Document> repository)
+    public static void EPSetupConsumer(this IModel channel, IRepository<Document> repository, HttpClient client)
     {
         channel.QueueDeclare(
             queue: "file-checking-queue",
@@ -21,46 +23,53 @@ public static class ChannelExtension
         );
 
         var consumer = new AsyncEventingBasicConsumer(channel);
-        
+
         consumer.Received += async (_, eventArgs) =>
         {
-            var body = eventArgs.Body.ToArray();
+            var message = GetMessageFromArgs(eventArgs);
 
-            var messageStr = Encoding.UTF8.GetString(body);
-            var message = JsonSerializer.Deserialize<FileMessage>(messageStr);
+            if (message.DocumentId == 0)
+            {
+                return;
+            }
 
-            Console.WriteLine(message);
-            
             var document = await repository.GetById(message.DocumentId);
 
             var path = $"C:/Eprolex/id_{document.DemandeId}/{document.TypeCode}/{document.Nom}";
 
-            if (!await ScanFile(path))
+            var fileIsSafe = await FileIsSafe(path);
+
+            if (fileIsSafe)
             {
-                Console.WriteLine("Fichier corrompu");
+                document.StatutCode = StatutDocument.Valide.Code;
+            }
+            else
+            {
                 // suppresion physique ?
                 document.StatutCode = StatutDocument.Corrompu.Code;
-                
+
                 return;
             }
 
-            document.StatutCode = StatutDocument.Valide.Code;
-            
-            if (!CheckExtension(path))
-            {
-                Console.WriteLine("Pas un pdf.");
-            
-                // conversion
-            }
-            
+            // if (!CheckExtension(path))
+            // {
+            //     Console.WriteLine("Pas un pdf.");
+            //
+            //     // conversion
+            // }
+
             await repository.Update(document);
+
+            var msg = new ScanResultMessage(document.DemandeId, document.Id, document.TypeCode, document.StatutCode);
+
+            await client.PostAsJsonAsync("/scanresult", msg);
 
             channel.BasicAck(
                 deliveryTag: eventArgs.DeliveryTag,
                 multiple: false
             );
         };
-        
+
         channel.BasicConsume(
             queue: "file-checking-queue",
             autoAck: false,
@@ -68,13 +77,21 @@ public static class ChannelExtension
         );
     }
 
-    private static async Task<bool> ScanFile(string path)
+    private static FileMessage GetMessageFromArgs(BasicDeliverEventArgs eventArgs)
     {
-        const int probability = 1;
-        
+        var body = eventArgs.Body.ToArray();
+        var messageStr = Encoding.UTF8.GetString(body);
+
+        return JsonSerializer.Deserialize<FileMessage>(messageStr);
+    }
+
+    private static async Task<bool> FileIsSafe(string path)
+    {
+        const int safetyProbability = 99;
+
         await Task.Delay(TimeSpan.FromSeconds(5));
-        
-        return RandomNumberGenerator.GetInt32(100) < probability;
+
+        return RandomNumberGenerator.GetInt32(100) < safetyProbability;
     }
 
     private static bool CheckExtension(string path)
@@ -83,7 +100,7 @@ public static class ChannelExtension
         var fileMagicNumber = ReadFirstBytes(path);
 
         var fileType = FileExtension.GetNomFromMagicNumber(fileMagicNumber);
-        
+
         return fileType != null && fileType == fileExtension;
     }
 

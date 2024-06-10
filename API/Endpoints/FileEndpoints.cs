@@ -1,6 +1,3 @@
-using Model.Entities;
-using Model.Exceptions;
-
 namespace API.Endpoints;
 
 public static class FileEndpoints
@@ -34,7 +31,7 @@ public static class FileEndpoints
 
                 if (!System.IO.File.Exists(Path.Combine(target, file.FileName)))
                 {
-                    throw new UploadFileException($"Le fichier { file.FileName } n'a pas été créé.");
+                    throw new UploadFileException($"Le fichier {file.FileName} n'a pas été créé.");
                 }
 
                 // envoie du message au worker service via rabbitMQ
@@ -45,9 +42,8 @@ public static class FileEndpoints
                     Content = string.Empty,
                     EnvoiDate = DateTime.Now
                 };
-                
+
                 queueService.Send(message);
-                
             }).DisableAntiforgery();
 
         app.MapPut("/document", async (IRepository<Document> repository, Document document)
@@ -58,13 +54,13 @@ public static class FileEndpoints
             await repository.Delete(id);
             return NoContent();
         });
-        
+
         app.MapGet("/projet/{demandeId:int}", async (IRepository<Document> repository, int demandeId)
             => await repository.GetProjetByDemandeId(demandeId));
-        
+
         app.MapGet("/annexeProjet/{demandeId:int}", async (IRepository<Document> repository, int demandeId)
             => await repository.GetAnnexesByDemandeId(demandeId));
-        
+
         app.MapGet("/autreDocument/{demandeId:int}", async (IRepository<Document> repository, int demandeId)
             => await repository.GetAutresDocumentsByDemandeId(demandeId));
 

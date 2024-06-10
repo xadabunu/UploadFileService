@@ -1,23 +1,32 @@
 namespace FileSafetyService;
 
-public class Worker(ILogger<Worker> logger, IRepository<Document> repository) : BackgroundService
+public class Worker(ILogger<Worker> logger, IRepository<Document> repository, IHttpClientFactory factory)
+    : BackgroundService
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        var factory = new ConnectionFactory();
+    private readonly HttpClient client = factory.CreateClient("API");
 
-        factory.DispatchConsumersAsync = true;
-        factory.ConsumerDispatchConcurrency = Environment.ProcessorCount;
-        
+    public override Task StartAsync(CancellationToken cancellationToken)
+    {
+        var factory = new ConnectionFactory
+        {
+            DispatchConsumersAsync = true,
+            ConsumerDispatchConcurrency = Environment.ProcessorCount
+        };
+
         using var connection = factory.CreateConnection("localhost");
-        
         using var channel = connection.CreateModel();
 
-        channel.EPSetupConsumer(repository);
+        channel.EPSetupConsumer(repository, client);
 
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
-        }
+        return base.StartAsync(cancellationToken);
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        Console.ReadKey();
+        // while (!stoppingToken.IsCancellationRequested)
+        // {
+        //     await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+        // }
     }
 }

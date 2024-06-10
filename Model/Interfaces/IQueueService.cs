@@ -1,7 +1,9 @@
+using Model.Entities;
+
 namespace Model.Interfaces;
 
 public interface IQueueService
 {
-    void Send(IMessage message);
+    void Send(FileMessage message);
     void Get(IMessage message);
 }

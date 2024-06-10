@@ -2,7 +2,7 @@ namespace BlazorUI.Application.Interfaces;
 
 public interface IDocumentRepository
 {
-    Task<bool> Create(Document document, IBrowserFile file);
+    Task<int> Create(Document document, IBrowserFile file);
     Task<bool> Delete(int id);
     Task<IEnumerable<Document>> GetProjet(int demandeId);
     Task<IEnumerable<Document>> GetAnnexes(int demandeId);

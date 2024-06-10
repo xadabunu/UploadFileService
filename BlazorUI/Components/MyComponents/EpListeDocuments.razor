@@ -1,3 +1,4 @@
+@using BlazorUI.Application.Model
 @inject IDocumentRepository repository
 
 @if (Documents.Any())
@@ -7,23 +8,61 @@
 <MudList>
 	@foreach (var document in Documents)
 	{
-		<EpListeDocumentsItem Document="@document" OnDelete="@OnDocumentDeleted"/>
+		<EpListeDocumentsItem
+			Document="@document"
+			OnDelete="@OnDocumentDeleted"/>
 	}
 </MudList>
 
 @code {
-	public IEnumerable<Document> Documents { get; set; } = [];
-	[CascadingParameter] public Demande Demande { get; set; }
+	[Parameter] public IEnumerable<Document> Documents { get; set; } = [];
+
+	[CascadingParameter(Name = "DemandeId")]
+	public int DemandeId { get; set; }
+
 	[Parameter] public TypeDocument TypeDocument { get; set; }
+
+	private ScanResultMessage? _message;
+
+	[CascadingParameter(Name = "Message")]
+	public ScanResultMessage? Message
+	{
+		get => _message;
+		set
+		{
+			if (value == null) return;
+
+			_message = value;
+			OnNewMessage();
+		}
+	}
 
 	protected override async Task OnInitializedAsync()
 	{
-		Documents = await repository.GetDocuments(Demande.Id, TypeDocument.Code);
+		Documents = await repository.GetDocuments(DemandeId, TypeDocument.Code);
+	}
+
+	private void OnNewMessage()
+	{
+		if (TypeDocument.Code != Message?.DocumentType) return;
+
+		var doc = Documents.SingleOrDefault(d => d.Id == Message.DocumentId);
+
+		if (doc is null)
+		{
+			Console.WriteLine("Pas de document trouvé");
+			return;
+		}
+
+		doc.StatutCode = Message.ResultCode;
+
+		StateHasChanged();
 	}
 
 	private async void OnDocumentDeleted()
 	{
-		Documents = await repository.GetDocuments(Demande.Id, TypeDocument.Code);
+		Documents = await repository.GetDocuments(DemandeId, TypeDocument.Code);
 		StateHasChanged();
 	}
+
 }

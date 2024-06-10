@@ -1,5 +1,3 @@
-using Model.Entities;
-
 namespace API.Repositories;
 
 public class DocumentRepository(DapperContext context): IRepository<Document>

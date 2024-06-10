@@ -4,7 +4,7 @@ public class QueueService(IConnectionFactory factory) : IQueueService
 {
     private readonly IConnection Connection = factory.CreateConnection("localhost");
 
-    public void Send(IMessage message)
+    public void Send(FileMessage message)
     {
         using var channel = Connection.CreateModel();
         
@@ -15,7 +15,7 @@ public class QueueService(IConnectionFactory factory) : IQueueService
         
         channel.BasicPublish(
             exchange: string.Empty,
-            routingKey: "filesafetyqueue",
+            routingKey: "file-checking-queue",
             basicProperties: null,
             body: body
         );
