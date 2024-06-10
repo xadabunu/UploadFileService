@@ -1,5 +1,3 @@
-using Model.Entities;
-
 namespace FileSafetyService.Services;
 
 public class QueueService(IConnectionFactory factory) : IQueueService

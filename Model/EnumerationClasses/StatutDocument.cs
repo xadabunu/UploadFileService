@@ -15,7 +15,7 @@ public class StatutDocument
         Libelle = libelle;
     }
     
-    public IEnumerable<StatutDocument> GetAll()
+    public static IEnumerable<StatutDocument> GetAll()
     {
         yield return EnCours;
         yield return Valide;

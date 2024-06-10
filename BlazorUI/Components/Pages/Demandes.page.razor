@@ -1,18 +1,24 @@
 @page "/demandes"
 @inject IHttpClientFactory Factory
-@inject NavigationManager NavManager
 
-<MudList>
-	@foreach (var demande in _demandes)
-	{
-		<MudListItem>
-			<MudPaper Class="border-solid border-2 mud-border-primary pa-4"
-			          Elevation="2">
-				<MudNavLink Href="@($"/file/{demande.Id}")">@demande.Id</MudNavLink>
-			</MudPaper>
-		</MudListItem>
-	}
-</MudList>
+@if (IsLoading)
+{
+	<MudProgressCircular Indeterminate="true"/>
+}
+else
+{
+	<MudList>
+		@foreach (var demande in _demandes)
+		{
+			<MudListItem>
+				<MudPaper Class="border-solid border-2 mud-border-primary pa-4"
+				          Elevation="2">
+					<MudNavLink Href="@($"/file/{demande.Id}")">@demande.Id</MudNavLink>
+				</MudPaper>
+			</MudListItem>
+		}
+	</MudList>
+}
 
 @code
 {
@@ -24,6 +30,8 @@
 		var client = Factory.CreateClient("API");
 
 		_demandes = await client.GetFromJsonAsync<IEnumerable<Demande>>("/demande");
+
+		Task.Delay(TimeSpan.FromMilliseconds(750));
 		
 		IsLoading = false;
 	}

@@ -20,7 +20,7 @@
 	[CascadingParameter(Name = "DemandeId")]
 	public int DemandeId { get; set; }
 
-	[Parameter] public TypeDocument TypeDocument { get; set; }
+	[Parameter] public TypeDocument TypeDocument { get; set; } = default!;
 
 	private ScanResultMessage? _message;
 
@@ -48,11 +48,7 @@
 
 		var doc = Documents.SingleOrDefault(d => d.Id == Message.DocumentId);
 
-		if (doc is null)
-		{
-			Console.WriteLine("Pas de document trouvé");
-			return;
-		}
+		if (doc is null) return;
 
 		doc.StatutCode = Message.ResultCode;
 
