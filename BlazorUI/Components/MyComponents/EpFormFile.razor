@@ -37,7 +37,10 @@
 			Ajouter le document
 		</MudButton>
 
-		<EpListeDocuments TypeDocument="TypeDocument" Documents="Documents"/>
+		<EpListeDocuments
+			TypeDocument="TypeDocument"
+			Documents="Documents"
+			DocumentsChanged="UpdateDocuments"/>
 
 	</MudStack>
 
@@ -46,8 +49,7 @@
 
 @code
 {
-	// private const long MaxFileSize = 1024 * 1024 * 3; // 3MB
-	public List<Document> Documents { get; set; } = [];
+	public List<Document> Documents = [];
 	private IBrowserFile? _currentFile;
 	private string _titreDocument = "";
 
@@ -67,7 +69,7 @@
 	{
 		if (_currentFile == null) return;
 
-		var document = new Document()
+		var document = new Document
 		{
 			Description = _titreDocument,
 			Nom = _currentFile.Name,
@@ -79,9 +81,16 @@
 		document.Id = await DocumentRepository.Create(document, _currentFile);
 
 		Documents.Add(document);
-		
-		_currentFile = null;
 
+		_currentFile = null;
+		_titreDocument = string.Empty;
+
+		StateHasChanged();
+	}
+
+	private async Task UpdateDocuments()
+	{
+		Documents = (await DocumentRepository.GetDocuments(DemandeId, TypeDocument.Code)).ToList();
 		StateHasChanged();
 	}
 

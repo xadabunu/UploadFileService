@@ -1,10 +1,17 @@
 @inject IDocumentRepository repository
 @inject IDialogService dialogService
 
-<MudContainer Class="border-solid border-2 mud-border-primary pa-2 mb-2">
+<style>
+	.corrupted {
+		border-color: red;
+		background-color: #ffebee;
+	}
+</style>
+
+<MudContainer Class="@GetBorderColor()">
 	<MudGrid>
 		<MudItem>
-			<MudText>@GetEtatLabel()</MudText>
+			<MudText Color="@GetCouleurStatut()">@GetEtatLabel()</MudText>
 			<MudText>@GetNameLabel()</MudText>
 			<MudText>@document.Nom</MudText>
 		</MudItem>
@@ -18,15 +25,27 @@
 
 @code {
 	[Parameter] public Document document { get; set; }
-	[Parameter] public EventCallback<Document> OnDelete { get; set; }
+	[Parameter] public EventCallback OnDelete { get; set; }
 
 	private string GetEtatLabel() =>
-			document.StatutCode == StatutDocument.EnCours.Code ? "En cours de vérification" :
-			document.StatutCode == StatutDocument.Corrompu.Code ? "Document corrompu" :
-			"Document validé";
+		document.StatutCode == StatutDocument.EnCours.Code ? "En cours de vérification" :
+		document.StatutCode == StatutDocument.Corrompu.Code ? "Document corrompu" :
+		"Document validé";
 
 	private string GetNameLabel() =>
 		document.Description.Length == 0 ? "Aucun nom entré par le déposant" : document.Description;
+
+	private string GetBorderColor()
+	{
+		var res = "border-solid border-2 pa-2 mb-2 ";
+		res += document.IsCorrupted ? "corrupted" : "mud-border-primary";
+		return res;
+	}
+
+	private Color GetCouleurStatut() =>
+		document.IsCorrupted ? Color.Error :
+		document.IsValide ? Color.Success :
+		Color.Warning;
 
 	private async void DeleteDocument()
 	{
@@ -40,4 +59,5 @@
 		await repository.Delete(document.Id);
 		await OnDelete.InvokeAsync();
 	}
+
 }

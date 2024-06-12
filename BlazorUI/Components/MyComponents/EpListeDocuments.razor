@@ -4,23 +4,24 @@
 @if (Documents.Any())
 {
 	<MudText Typo="@Typo.h6">@Documents.Count() Document@(Documents.Count() == 1 ? "" : "s"):</MudText>
+	<MudList>
+		@foreach (var document in Documents)
+		{
+			<EpListeDocumentsItem
+				@key="document.Id"
+				Document="@document"
+				OnDelete="@OnDocumentDeleted"/>
+		}
+	</MudList>
 }
-<MudList>
-	@foreach (var document in Documents)
-	{
-		<EpListeDocumentsItem
-			Document="@document"
-			OnDelete="@OnDocumentDeleted"/>
-	}
-</MudList>
 
 @code {
-	[Parameter] public IEnumerable<Document> Documents { get; set; } = [];
+	[Parameter] public List<Document> Documents { get; set; } = [];
+	[Parameter] public TypeDocument TypeDocument { get; set; } = default!;
+	[Parameter] public EventCallback<List<Document>> DocumentsChanged { get; set; }
 
 	[CascadingParameter(Name = "DemandeId")]
 	public int DemandeId { get; set; }
-
-	[Parameter] public TypeDocument TypeDocument { get; set; } = default!;
 
 	private ScanResultMessage? _message;
 
@@ -39,7 +40,7 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		Documents = await repository.GetDocuments(DemandeId, TypeDocument.Code);
+		Documents = (await repository.GetDocuments(DemandeId, TypeDocument.Code)).ToList();
 	}
 
 	private void OnNewMessage()
@@ -57,8 +58,10 @@
 
 	private async void OnDocumentDeleted()
 	{
-		Documents = await repository.GetDocuments(DemandeId, TypeDocument.Code);
-		StateHasChanged();
+		// Documents.Remove();
+		// Documents = (await repository.GetDocuments(DemandeId, TypeDocument.Code)).ToList();
+		// StateHasChanged();
+		await DocumentsChanged.InvokeAsync();
 	}
 
 }

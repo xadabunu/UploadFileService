@@ -1,3 +1,5 @@
+using Model.EnumerationClasses;
+
 namespace Model.Entities;
 
 public class Document
@@ -8,4 +10,7 @@ public class Document
     public string Description { get; init; } = string.Empty;
     public string StatutCode { get; set; } = string.Empty;
     public int DemandeId { get; init; }
+
+    public bool IsCorrupted => StatutCode == StatutDocument.Corrompu.Code;
+    public bool IsValide => StatutCode == StatutDocument.Valide.Code;
 }
