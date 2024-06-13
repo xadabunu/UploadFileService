@@ -1,13 +1,27 @@
 @page "/file/{id:int}"
 @inject IConfiguration config
+@inject ISnackbar Snackbar
 @inject IHttpClientFactory Factory
 @inject NavigationManager NavManager
 
-@using Microsoft.AspNetCore.SignalR.Client
-@using BlazorUI.Application.Model
 @implements IAsyncDisposable
 
 <PageTitle>Les fichiers</PageTitle>
+
+@if (DisplayNotification)
+{
+	<MudAlert
+		NoIcon="true"
+		Severity="Severity.Warning"
+		ShowCloseIcon="true"
+		CloseIconClicked="() => DisplayNotification = false"
+		Variant="Variant.Filled"
+		Class="fixed z-100"
+		Style="bottom: 20px; right: 20px;">
+		Un autre déposant a ajouté ou supprimé des documents.
+		Rafraichissez la page pour voir les modifications.
+	</MudAlert>
+}
 
 <MudText Typo="Typo.h4" Class="my-6">Téléchargez vos fichiers ici</MudText>
 
@@ -21,7 +35,7 @@
 	{
 		<CascadingValue Value="@Id" Name="DemandeId">
 			<CascadingValue Value="@Message" Name="Message">
-				<CascadingValue Value="@HubConnection.ConnectionId" Name="ConnectionId">
+				<CascadingValue Value="@HubConnection" Name="HubConnection">
 
 					<EpExpansionPanel
 						TypeDocument="@TypeDocument.Projet"/>
@@ -45,6 +59,7 @@
 	private ScanResultMessage Message { get; set; }
 
 	private bool IsLoading = true;
+	private bool DisplayNotification = false;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -95,7 +110,11 @@
 			{
 				Message = newMessage;
 				await InvokeAsync(StateHasChanged);
+
+				Snackbar.Add("Le scan de votre fichier est terminé.", Severity.Info);
 			});
+
+		HubConnection.On("UpdateNotification", () => { DisplayNotification = true; });
 
 		return HubConnection;
 	}

@@ -12,10 +12,8 @@ public class MyHub : Hub
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, demandeId.ToString());
     }
 
-    public async Task SendMessage(int demandeId, int documentId, string typeDocument, string scanResult)
+    public async Task Notify(int demandeId, string senderId)
     {
-        await Clients
-            .Group(demandeId.ToString())
-            .SendAsync("GetScanResult", new { demandeId, documentId, typeDocument, scanResult });
+        await Clients.GroupExcept(demandeId.ToString(), senderId).SendAsync("UpdateNotification");
     }
 }

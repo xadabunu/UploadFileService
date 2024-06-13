@@ -1,3 +1,4 @@
+@using Microsoft.AspNetCore.SignalR.Client
 @inject ILogger<EpFormFile> Logger;
 @inject IDocumentRepository DocumentRepository;
 
@@ -58,8 +59,8 @@
 	[CascadingParameter(Name = "DemandeId")]
 	public int DemandeId { get; set; }
 
-	[CascadingParameter(Name = "ConnectionId")]
-	public string ConnectionId { get; set; }
+	[CascadingParameter(Name = "HubConnection")]
+	public HubConnection HubConnection { get; set; }
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -86,7 +87,7 @@
 			DemandeId = DemandeId
 		};
 
-		document.Id = await DocumentRepository.Create(document, _currentFile, ConnectionId);
+		document.Id = await DocumentRepository.Create(document, _currentFile, HubConnection.ConnectionId);
 
 		Documents.Add(document);
 
@@ -94,12 +95,15 @@
 		_titreDocument = string.Empty;
 
 		StateHasChanged();
+
+		await HubConnection.InvokeAsync("Notify", DemandeId, HubConnection.ConnectionId);
 	}
 
 	private async Task UpdateDocuments()
 	{
 		Documents = (await DocumentRepository.GetDocumentsByType(DemandeId, TypeDocument.Code)).ToList();
 		StateHasChanged();
+		await HubConnection.InvokeAsync("Notify", DemandeId, HubConnection.ConnectionId);
 	}
 
 	private bool NoFileSelected() => _currentFile == null;

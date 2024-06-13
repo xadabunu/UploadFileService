@@ -1,10 +1,15 @@
 // ReSharper disable ConvertTypeCheckPatternToNullCheck
 
-using BlazorUI.Application.Repositories;
-
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddMudServices();
+builder.Services.AddMudServices(config =>
+{
+    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
+    config.SnackbarConfiguration.PreventDuplicates = true;
+    config.SnackbarConfiguration.ShowCloseIcon = true;
+    config.SnackbarConfiguration.VisibleStateDuration = 5000;
+    config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
+});
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
