@@ -1,3 +1,5 @@
+using API.middlewares;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<DapperContext>();
@@ -11,15 +13,16 @@ builder.Services.AddSignalR();
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionMiddleware>();
+
 app.MapFileEndpoints();
 app.MapDemandeEndpoints();
-
 
 app.MapHub<MyHub>("/huburl");
 
 app.MapPost("/scanresult", async (IHubContext<MyHub> hubContext, ScanResultMessage message) =>
 {
-    hubContext.Clients.Group(message.demandeId.ToString()).SendAsync("GetScanResult", message);
+    await hubContext.Clients.Client(message.connectionId).SendAsync("GetScanResult", message);
     return Ok();
 });
 

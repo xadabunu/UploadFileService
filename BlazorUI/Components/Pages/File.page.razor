@@ -21,13 +21,15 @@
 	{
 		<CascadingValue Value="@Id" Name="DemandeId">
 			<CascadingValue Value="@Message" Name="Message">
+				<CascadingValue Value="@HubConnection.ConnectionId" Name="ConnectionId">
 
-				<EpExpansionPanel
-					TypeDocument="@TypeDocument.Projet"/>
+					<EpExpansionPanel
+						TypeDocument="@TypeDocument.Projet"/>
 
-				<EpExpansionPanel
-					TypeDocument="TypeDocument.AutreDocument"/>
+					<EpExpansionPanel
+						TypeDocument="TypeDocument.AutreDocument"/>
 
+				</CascadingValue>
 			</CascadingValue>
 		</CascadingValue>
 	}
@@ -89,10 +91,10 @@
 		}
 
 		HubConnection.On<ScanResultMessage>("GetScanResult",
-			(newMessage) =>
+			async (newMessage) =>
 			{
 				Message = newMessage;
-				InvokeAsync(StateHasChanged);
+				await InvokeAsync(StateHasChanged);
 			});
 
 		return HubConnection;

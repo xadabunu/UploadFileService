@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Mvc;
+
 namespace API.Endpoints;
 
 public static class FileEndpoints
@@ -17,7 +19,7 @@ public static class FileEndpoints
         });
 
         app.MapPost("/file/{documentId:int}",
-            async (int documentId, IFormFile file, IQueueService queueService,
+            async (int documentId, IFormFile file, IQueueService queueService, [FromQuery] string connectionId,
                 IRepository<Document> documentRepository) =>
             {
                 var document = await documentRepository.GetById(documentId);
@@ -31,15 +33,15 @@ public static class FileEndpoints
 
                 if (!System.IO.File.Exists(Path.Combine(target, file.FileName)))
                 {
-                    throw new UploadFileException($"Le fichier {file.FileName} n'a pas été créé.");
+                    throw new UploadFileException($"Le fichier {file.FileName} n'a pas pu être créé.");
                 }
 
                 // envoie du message au worker service via rabbitMQ
-                var message = new FileMessage()
+                var message = new FileMessage
                 {
                     DemandeId = document.DemandeId,
                     DocumentId = document.Id,
-                    Content = string.Empty,
+                    ConnectionId = connectionId,
                     EnvoiDate = DateTime.Now
                 };
 

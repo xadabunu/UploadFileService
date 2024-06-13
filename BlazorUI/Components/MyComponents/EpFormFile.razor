@@ -51,12 +51,20 @@
 {
 	public List<Document> Documents = [];
 	private IBrowserFile? _currentFile;
-	private string _titreDocument = "";
+	private string _titreDocument = string.Empty;
 
 	[Parameter] public TypeDocument TypeDocument { get; init; } = default!;
 
 	[CascadingParameter(Name = "DemandeId")]
 	public int DemandeId { get; set; }
+
+	[CascadingParameter(Name = "ConnectionId")]
+	public string ConnectionId { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		Documents = (await DocumentRepository.GetDocumentsByType(DemandeId, TypeDocument.Code)).ToList();
+	}
 
 	private void FileChanged(IBrowserFile? file)
 	{
@@ -67,7 +75,7 @@
 
 	private async Task UploadDocument()
 	{
-		if (_currentFile == null) return;
+		if (_currentFile is null) return;
 
 		var document = new Document
 		{
@@ -78,7 +86,7 @@
 			DemandeId = DemandeId
 		};
 
-		document.Id = await DocumentRepository.Create(document, _currentFile);
+		document.Id = await DocumentRepository.Create(document, _currentFile, ConnectionId);
 
 		Documents.Add(document);
 
@@ -90,11 +98,11 @@
 
 	private async Task UpdateDocuments()
 	{
-		Documents = (await DocumentRepository.GetDocuments(DemandeId, TypeDocument.Code)).ToList();
+		Documents = (await DocumentRepository.GetDocumentsByType(DemandeId, TypeDocument.Code)).ToList();
 		StateHasChanged();
 	}
 
 	private bool NoFileSelected() => _currentFile == null;
 	private string GetFileLabel() => _currentFile?.Name ?? "Aucun fichier séléctionné";
-	private string GetColorClass() => TypeDocument == TypeDocument.Projet ? "blue-grey lighten-5" : "";
+	private string GetColorClass() => TypeDocument == TypeDocument.Projet ? "blue-grey lighten-5" : string.Empty;
 }

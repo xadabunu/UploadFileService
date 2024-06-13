@@ -25,9 +25,12 @@ public static class ChannelExtension
 
             var document = await repository.GetById(message.DocumentId);
 
-            var scanResultMessage = await CheckDocument(document!, repository);
+            if (document is not null) // si le déposant retire le document avant le traitement du message
+            {
+                var scanResultMessage = await CheckDocument(document, repository, message.ConnectionId);
 
-            await client.PostAsJsonAsync("/scanresult", scanResultMessage);
+                await client.PostAsJsonAsync("/scanresult", scanResultMessage);
+            }
 
             channel.BasicAck(
                 deliveryTag: eventArgs.DeliveryTag,
@@ -50,13 +53,18 @@ public static class ChannelExtension
         return JsonSerializer.Deserialize<FileMessage>(messageStr);
     }
 
-    private static async Task<ScanResultMessage> CheckDocument(Document document, IRepository<Document> repository)
+    private static async Task<ScanResultMessage> CheckDocument(Document document, IRepository<Document> repository, string connectionId)
     {
         var path = $"C:/Eprolex/id_{document.DemandeId}/{document.TypeCode}/{document.Nom}";
 
         var fileIsSafe = await ScanFile(path);
 
         document.StatutCode = fileIsSafe ? StatutDocument.Valide.Code : StatutDocument.Corrompu.Code;
+
+        if (!fileIsSafe)
+        {
+            File.Delete(path);
+        }
 
         // if (!CheckExtension(path))
         // {
@@ -67,7 +75,7 @@ public static class ChannelExtension
 
         await repository.Update(document);
 
-        return new ScanResultMessage(document.DemandeId, document.Id, document.TypeCode, document.StatutCode);
+        return new ScanResultMessage(document.DemandeId, document.Id, document.TypeCode, document.StatutCode, connectionId);
     }
 
     private static async Task<bool> ScanFile(string path)

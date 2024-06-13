@@ -2,7 +2,7 @@ namespace BlazorUI.Application.Repositories;
 
 public class DocumentRepository(IHttpClientFactory factory) : IDocumentRepository
 {
-    public async Task<int> Create(Document document, IBrowserFile file)
+    public async Task<int> Create(Document document, IBrowserFile file, string connectionId)
     {
         var client = factory.CreateClient("API");
 
@@ -10,7 +10,7 @@ public class DocumentRepository(IHttpClientFactory factory) : IDocumentRepositor
         {
             document = await WriteToDb(client, document);
 
-            if (await CopyFileToFolder(client, document, file))
+            if (await CopyFileToFolder(client, document, file, connectionId))
             {
                 return document.Id;
             }
@@ -38,48 +38,51 @@ public class DocumentRepository(IHttpClientFactory factory) : IDocumentRepositor
         return responseMessage.IsSuccessStatusCode;
     }
 
-    public async Task<IEnumerable<Document>> GetProjet(int demandeId)
-    {
-        var client = factory.CreateClient("API");
+    // public async Task<IEnumerable<Document>> GetProjet(int demandeId)
+    // {
+    //     var client = factory.CreateClient("API");
+    //
+    //     return await client.GetFromJsonAsync<IEnumerable<Document>>($"/projet/{demandeId}");
+    // }
+    //
+    // public async Task<IEnumerable<Document>> GetAnnexes(int demandeId)
+    // {
+    //     var client = factory.CreateClient("API");
+    //
+    //     return [];
+    // }
+    //
+    // public async Task<IEnumerable<Document>> GetAutresDocuments(int demandeId)
+    // {
+    //     throw new NotImplementedException();
+    // }
 
-        return await client.GetFromJsonAsync<IEnumerable<Document>>($"/projet/{demandeId}");
-    }
-
-    public async Task<IEnumerable<Document>> GetAnnexes(int demandeId)
-    {
-        var client = factory.CreateClient("API");
-
-        return [];
-    }
-
-    public async Task<IEnumerable<Document>> GetAutresDocuments(int demandeId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task<IEnumerable<Document>> GetDocuments(int demandeId, string typeDocument)
+    public async Task<IEnumerable<Document>> GetDocumentsByType(int demandeId, string typeDocument)
     {
         var client = factory.CreateClient("API");
 
         return await client.GetFromJsonAsync<IEnumerable<Document>>($"{typeDocument}/{demandeId}");
     }
 
-    private static async Task<Document> WriteToDb(HttpClient client, Document document)
+    private static async Task<Document?> WriteToDb(HttpClient client, Document document)
     {
         var response = await client.PostAsJsonAsync("/document", document);
 
         return await response.Content.ReadFromJsonAsync<Document>();
     }
 
-    private static async Task<bool> CopyFileToFolder(HttpClient client, Document document, IBrowserFile file)
+    private static async Task<bool> CopyFileToFolder(HttpClient client, Document document, IBrowserFile file, string connectionId)
     {
         var content = new MultipartFormDataContent();
+        
         var fileContent = new StreamContent(file.OpenReadStream());
-
         fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
         content.Add(fileContent, "file", file.Name);
 
-        var response = await client.PostAsync($"/file/{document.Id}", content);
+        // var connectionContent = new StringContent(connectionId);
+        // content.Add(connectionContent);
+
+        var response = await client.PostAsync($"/file/{document.Id}?connectionId={connectionId}", content);
 
         return response.IsSuccessStatusCode;
     }

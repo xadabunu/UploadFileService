@@ -38,11 +38,6 @@
 		}
 	}
 
-	protected override async Task OnInitializedAsync()
-	{
-		Documents = (await repository.GetDocuments(DemandeId, TypeDocument.Code)).ToList();
-	}
-
 	private void OnNewMessage()
 	{
 		if (TypeDocument.Code != Message?.DocumentType) return;

@@ -8,12 +8,12 @@
 	}
 </style>
 
-<MudContainer Class="@GetBorderColor()">
-	<MudGrid>
+<MudContainer Class="@GetBorderColor()" MaxWidth="MaxWidth.Medium">
+	<MudGrid Class="d-flex justify-space-between">
 		<MudItem>
-			<MudText Color="@GetCouleurStatut()">@GetEtatLabel()</MudText>
-			<MudText>@GetNameLabel()</MudText>
-			<MudText>@document.Nom</MudText>
+			<MudText Typo="Typo.subtitle2" Color="@GetCouleurStatut()">@GetEtatLabel()</MudText>
+			<MudText Typo="Typo.body1">@GetNameLabel()</MudText>
+			<MudText Typo="Typo.caption">@document.Nom</MudText>
 		</MudItem>
 		<MudItem Class="d-flex justify-end">
 			<MudButton
@@ -33,7 +33,7 @@
 		"Document validé";
 
 	private string GetNameLabel() =>
-		document.Description.Length == 0 ? "Aucun nom entré par le déposant" : document.Description;
+		document.Description == string.Empty ? "Aucun nom entré par le déposant" : document.Description;
 
 	private string GetBorderColor()
 	{
