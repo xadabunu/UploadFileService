@@ -1,4 +1,5 @@
 @using Microsoft.AspNetCore.SignalR.Client
+@using BlazorUI.Application.Model
 @inject ILogger<EpFormFile> Logger;
 @inject IDocumentRepository DocumentRepository;
 
@@ -40,8 +41,7 @@
 
 		<EpListeDocuments
 			TypeDocument="TypeDocument"
-			Documents="Documents"
-			DocumentsChanged="UpdateDocuments"/>
+			Documents="Documents"/>
 
 	</MudStack>
 
@@ -56,14 +56,16 @@
 
 	[Parameter] public TypeDocument TypeDocument { get; init; } = default!;
 
-	[CascadingParameter(Name = "DemandeId")]
-	public int DemandeId { get; set; }
+	[CascadingParameter] public DocumentsPageState State { get; set; }
 
-	[CascadingParameter(Name = "HubConnection")]
-	public HubConnection HubConnection { get; set; }
+	private int DemandeId { get; set; }
+	private HubConnection? HubConnection { get; set; }
 
 	protected override async Task OnInitializedAsync()
 	{
+		DemandeId = State.DemandeId;
+		HubConnection = State.HubConnection;
+
 		Documents = (await DocumentRepository.GetDocumentsByType(DemandeId, TypeDocument.Code)).ToList();
 	}
 
@@ -87,7 +89,7 @@
 			DemandeId = DemandeId
 		};
 
-		document.Id = await DocumentRepository.Create(document, _currentFile, HubConnection.ConnectionId);
+		document.Id = await DocumentRepository.Create(document, _currentFile, State.HubConnection.ConnectionId);
 
 		Documents.Add(document);
 
@@ -96,14 +98,9 @@
 
 		StateHasChanged();
 
-		await HubConnection.InvokeAsync("Notify", DemandeId, HubConnection.ConnectionId);
-	}
-
-	private async Task UpdateDocuments()
-	{
-		Documents = (await DocumentRepository.GetDocumentsByType(DemandeId, TypeDocument.Code)).ToList();
-		StateHasChanged();
-		await HubConnection.InvokeAsync("Notify", DemandeId, HubConnection.ConnectionId);
+		Console.WriteLine($"Sender: {HubConnection.ConnectionId}");
+		
+		await State.HubConnection.InvokeAsync("Notify", DemandeId, HubConnection.ConnectionId);
 	}
 
 	private bool NoFileSelected() => _currentFile == null;

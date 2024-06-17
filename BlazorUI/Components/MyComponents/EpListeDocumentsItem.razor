@@ -18,7 +18,7 @@
 
 @code {
 	[Parameter] public Document document { get; set; }
-	[Parameter] public EventCallback OnDelete { get; set; }
+	[Parameter] public EventCallback<Document> OnDelete { get; set; }
 
 	private string GetEtatLabel() =>
 		document.StatutCode == StatutDocument.EnCours.Code ? "En cours de vérification" :
@@ -49,8 +49,7 @@
 
 		if (!(result ?? false)) return;
 
-		await repository.Delete(document.Id);
-		await OnDelete.InvokeAsync();
+		await OnDelete.InvokeAsync(document);
 	}
 
 }

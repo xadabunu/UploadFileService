@@ -10,7 +10,7 @@
 			<EpListeDocumentsItem
 				@key="document.Id"
 				Document="@document"
-				OnDelete="@OnDocumentDeleted"/>
+				OnDelete="@(document =>OnDocumentDeleted(document))"/>
 		}
 	</MudList>
 }
@@ -18,45 +18,40 @@
 @code {
 	[Parameter] public List<Document> Documents { get; set; } = [];
 	[Parameter] public TypeDocument TypeDocument { get; set; } = default!;
-	[Parameter] public EventCallback<List<Document>> DocumentsChanged { get; set; }
 
-	[CascadingParameter(Name = "DemandeId")]
-	public int DemandeId { get; set; }
+	[CascadingParameter] public DocumentsPageState State { get; set; }
 
-	private ScanResultMessage? _message;
-
-	[CascadingParameter(Name = "Message")]
-	public ScanResultMessage? Message
+	protected override async Task OnInitializedAsync()
 	{
-		get => _message;
-		set
+		if (State.HubConnection is { State: HubConnectionState.Connected })
 		{
-			if (value == null) return;
-
-			_message = value;
-			OnNewMessage();
+			State.HubConnection.On<ScanResultMessage>(
+				"GetScanResult", OnNewMessage);
 		}
 	}
 
-	private void OnNewMessage()
+	private void OnNewMessage(ScanResultMessage message)
 	{
-		if (TypeDocument.Code != Message?.DocumentType) return;
+		if (TypeDocument.Code != message.DocumentType) return;
 
-		var doc = Documents.SingleOrDefault(d => d.Id == Message.DocumentId);
+		var doc = Documents.SingleOrDefault(d => d.Id == message.DocumentId);
 
 		if (doc is null) return;
 
-		doc.StatutCode = Message.ResultCode;
+		doc.StatutCode = message.ResultCode;
 
-		StateHasChanged();
+		InvokeAsync(StateHasChanged);
 	}
 
-	private async void OnDocumentDeleted()
+	private async void OnDocumentDeleted(Document document)
 	{
-		// Documents.Remove();
-		// Documents = (await repository.GetDocuments(DemandeId, TypeDocument.Code)).ToList();
-		// StateHasChanged();
-		await DocumentsChanged.InvokeAsync();
+		await repository.Delete(document.Id);
+		Documents.Remove(document);
+		await InvokeAsync(StateHasChanged);
+		await State.HubConnection.InvokeAsync(
+			"Notify",
+			State.DemandeId,
+			State.HubConnection.ConnectionId);
 	}
 
 }

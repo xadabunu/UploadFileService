@@ -1,9 +1,10 @@
 @page "/file/{id:int}"
 @inject IConfiguration config
 @inject ISnackbar Snackbar
-@inject IHttpClientFactory Factory
 @inject NavigationManager NavManager
+@inject IDemandeRepository Repository
 
+@using BlazorUI.Application.Model
 @implements IAsyncDisposable
 
 <PageTitle>Les fichiers</PageTitle>
@@ -13,8 +14,9 @@
 	<MudAlert
 		NoIcon="true"
 		Severity="Severity.Warning"
+		CloseIcon="@Icons.Material.Filled.Refresh"
 		ShowCloseIcon="true"
-		CloseIconClicked="() => DisplayNotification = false"
+		CloseIconClicked="Refresh"
 		Variant="Variant.Filled"
 		Class="fixed z-100"
 		Style="bottom: 20px; right: 20px;">
@@ -33,18 +35,14 @@
 	}
 	else
 	{
-		<CascadingValue Value="@Id" Name="DemandeId">
-			<CascadingValue Value="@Message" Name="Message">
-				<CascadingValue Value="@HubConnection" Name="HubConnection">
+		<CascadingValue Value="@State">
 
-					<EpExpansionPanel
-						TypeDocument="@TypeDocument.Projet"/>
+			<EpExpansionPanel
+				TypeDocument="@TypeDocument.Projet"/>
 
-					<EpExpansionPanel
-						TypeDocument="TypeDocument.AutreDocument"/>
+			<EpExpansionPanel
+				TypeDocument="TypeDocument.AutreDocument"/>
 
-				</CascadingValue>
-			</CascadingValue>
 		</CascadingValue>
 	}
 
@@ -56,18 +54,16 @@
 	private Demande? Demande { get; set; }
 	private HubConnection? HubConnection { get; set; }
 
-	private ScanResultMessage Message { get; set; }
+	private DocumentsPageState? State { get; set; }
 
 	private bool IsLoading = true;
 	private bool DisplayNotification = false;
 
 	protected override async Task OnInitializedAsync()
 	{
-		var client = Factory.CreateClient("API");
+		Demande = await Repository.GetById(Id);
 
-		var result = await client.GetAsync($"/demande/{Id}");
-
-		if (!result.IsSuccessStatusCode)
+		if (Demande is null)
 		{
 			NavManager.NavigateTo("/");
 		}
@@ -75,21 +71,10 @@
 		{
 			await Task.Delay(750);
 
-			var demande = await result.Content.ReadFromJsonAsync<Demande>();
-			Demande = demande;
-
-			HubConnection = await SetupHub();
+			await SetupHub();
 		}
 
 		IsLoading = false;
-	}
-
-	public async ValueTask DisposeAsync()
-	{
-		if (HubConnection != null)
-		{
-			await HubConnection.DisposeAsync();
-		}
 	}
 
 	private async Task<HubConnection> SetupHub()
@@ -103,19 +88,30 @@
 		if (HubConnection is { State: HubConnectionState.Connected })
 		{
 			await HubConnection.InvokeAsync("JoinGroup", Demande.Id);
+			State = new DocumentsPageState(Id, HubConnection);
 		}
 
-		HubConnection.On<ScanResultMessage>("GetScanResult",
-			async (newMessage) =>
-			{
-				Message = newMessage;
-				await InvokeAsync(StateHasChanged);
-
-				Snackbar.Add("Le scan de votre fichier est terminé.", Severity.Info);
-			});
-
-		HubConnection.On("UpdateNotification", () => { DisplayNotification = true; });
+		HubConnection.On("ScanDone", ShowSnackBar);
+		HubConnection.On("UpdateNotification", Notify);
 
 		return HubConnection;
+	}
+
+	private void Notify()
+	{
+		DisplayNotification = true;
+		InvokeAsync(StateHasChanged);
+	}
+
+	private void ShowSnackBar() => Snackbar.Add("Le scan de votre fichier est terminé.", Severity.Info);
+
+	private void Refresh() => NavManager.Refresh(true);
+	
+	public async ValueTask DisposeAsync()
+	{
+		if (HubConnection is not null)
+		{
+			await HubConnection.DisposeAsync();
+		}
 	}
 }

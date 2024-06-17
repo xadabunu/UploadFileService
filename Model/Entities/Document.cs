@@ -13,4 +13,5 @@ public class Document
 
     public bool IsCorrupted => StatutCode == StatutDocument.Corrompu.Code;
     public bool IsValide => StatutCode == StatutDocument.Valide.Code;
+    public bool IsEnCours => StatutCode == StatutDocument.EnCours.Code;
 }

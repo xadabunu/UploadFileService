@@ -17,6 +17,7 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddHttpClient("API", client => client.BaseAddress = new Uri(builder.Configuration["ApiUrl"]));
 builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
+builder.Services.AddScoped<IDemandeRepository, DemandeRepository>();
 
 var app = builder.Build();
 

@@ -24,6 +24,10 @@ app.MapPost("/scanresult", async (IHubContext<MyHub> hubContext, ScanResultMessa
 {
     await hubContext.Clients
         .Client(message.connectionId)
+        .SendAsync("ScanDone");
+    
+    await hubContext.Clients
+        .Client(message.connectionId)
         .SendAsync("GetScanResult", message);
 
     await hubContext.Clients
