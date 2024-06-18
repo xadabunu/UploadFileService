@@ -1,29 +1,9 @@
 @page "/file/{id:int}"
-@inject IConfiguration config
-@inject ISnackbar Snackbar
 @inject NavigationManager NavManager
 @inject IDemandeRepository Repository
 
-@using BlazorUI.Application.Model
-@implements IAsyncDisposable
 
 <PageTitle>Les fichiers</PageTitle>
-
-@if (DisplayNotification)
-{
-	<MudAlert
-		NoIcon="true"
-		Severity="Severity.Warning"
-		CloseIcon="@Icons.Material.Filled.Refresh"
-		ShowCloseIcon="true"
-		CloseIconClicked="Refresh"
-		Variant="Variant.Filled"
-		Class="fixed z-100"
-		Style="bottom: 20px; right: 20px;">
-		Un autre déposant a ajouté ou supprimé des documents.
-		Rafraichissez la page pour voir les modifications.
-	</MudAlert>
-}
 
 <MudText Typo="Typo.h4" Class="my-6">Téléchargez vos fichiers ici</MudText>
 
@@ -35,7 +15,9 @@
 	}
 	else
 	{
-		<CascadingValue Value="@State">
+		<EpState DemandeId="Id">
+
+			<EpAlertComponent/>
 
 			<EpExpansionPanel
 				TypeDocument="@TypeDocument.Projet"/>
@@ -43,7 +25,7 @@
 			<EpExpansionPanel
 				TypeDocument="TypeDocument.AutreDocument"/>
 
-		</CascadingValue>
+		</EpState>
 	}
 
 </MudExpansionPanels>
@@ -52,12 +34,8 @@
 {
 	[Parameter] public int Id { get; set; }
 	private Demande? Demande { get; set; }
-	private HubConnection? HubConnection { get; set; }
-
-	private DocumentsPageState? State { get; set; }
 
 	private bool IsLoading = true;
-	private bool DisplayNotification = false;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -67,51 +45,9 @@
 		{
 			NavManager.NavigateTo("/");
 		}
-		else
-		{
-			await Task.Delay(750);
 
-			await SetupHub();
-		}
+		await Task.Delay(750);
 
 		IsLoading = false;
-	}
-
-	private async Task<HubConnection> SetupHub()
-	{
-		HubConnection = new HubConnectionBuilder()
-			.WithUrl("http://localhost:5057/huburl")
-			.Build();
-
-		await HubConnection.StartAsync();
-
-		if (HubConnection is { State: HubConnectionState.Connected })
-		{
-			await HubConnection.InvokeAsync("JoinGroup", Demande.Id);
-			State = new DocumentsPageState(Id, HubConnection);
-		}
-
-		HubConnection.On("ScanDone", ShowSnackBar);
-		HubConnection.On("UpdateNotification", Notify);
-
-		return HubConnection;
-	}
-
-	private void Notify()
-	{
-		DisplayNotification = true;
-		InvokeAsync(StateHasChanged);
-	}
-
-	private void ShowSnackBar() => Snackbar.Add("Le scan de votre fichier est terminé.", Severity.Info);
-
-	private void Refresh() => NavManager.Refresh(true);
-	
-	public async ValueTask DisposeAsync()
-	{
-		if (HubConnection is not null)
-		{
-			await HubConnection.DisposeAsync();
-		}
 	}
 }

@@ -1,6 +1,6 @@
-namespace BlazorUI.Application.Repositories;
+namespace BlazorUI.Services;
 
-public class DemandeRepository(IHttpClientFactory factory) : IDemandeRepository
+public class DemandeService(IHttpClientFactory factory) : IDemandeRepository
 {
     public async Task<Demande?> GetById(int id)
     {

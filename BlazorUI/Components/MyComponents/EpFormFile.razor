@@ -1,7 +1,6 @@
 @using Microsoft.AspNetCore.SignalR.Client
-@using BlazorUI.Application.Model
 @inject ILogger<EpFormFile> Logger;
-@inject IDocumentRepository DocumentRepository;
+@inject IDocumentService DocumentService;
 
 <MudPaper Elevation="0" Class="@GetColorClass()">
 
@@ -39,9 +38,7 @@
 			Ajouter le document
 		</MudButton>
 
-		<EpListeDocuments
-			TypeDocument="TypeDocument"
-			Documents="Documents"/>
+		<EpListeDocuments TypeDocument="TypeDocument"/>
 
 	</MudStack>
 
@@ -50,13 +47,12 @@
 
 @code
 {
-	public List<Document> Documents = [];
 	private IBrowserFile? _currentFile;
 	private string _titreDocument = string.Empty;
 
 	[Parameter] public TypeDocument TypeDocument { get; init; } = default!;
 
-	[CascadingParameter] public DocumentsPageState State { get; set; }
+	[CascadingParameter] public EpState State { get; set; }
 
 	private int DemandeId { get; set; }
 	private HubConnection? HubConnection { get; set; }
@@ -65,13 +61,11 @@
 	{
 		DemandeId = State.DemandeId;
 		HubConnection = State.HubConnection;
-
-		Documents = (await DocumentRepository.GetDocumentsByType(DemandeId, TypeDocument.Code)).ToList();
 	}
 
 	private void FileChanged(IBrowserFile? file)
 	{
-		if (file == null) return;
+		if (file is null) return;
 
 		_currentFile = file;
 	}
@@ -89,21 +83,13 @@
 			DemandeId = DemandeId
 		};
 
-		document.Id = await DocumentRepository.Create(document, _currentFile, State.HubConnection.ConnectionId);
-
-		Documents.Add(document);
+		document.Id = await DocumentService.Create(document, _currentFile, HubConnection?.ConnectionId);
 
 		_currentFile = null;
 		_titreDocument = string.Empty;
-
-		StateHasChanged();
-
-		Console.WriteLine($"Sender: {HubConnection.ConnectionId}");
-		
-		await State.HubConnection.InvokeAsync("Notify", DemandeId, HubConnection.ConnectionId);
 	}
 
-	private bool NoFileSelected() => _currentFile == null;
+	private bool NoFileSelected() => _currentFile is null;
 	private string GetFileLabel() => _currentFile?.Name ?? "Aucun fichier séléctionné";
 	private string GetColorClass() => TypeDocument == TypeDocument.Projet ? "blue-grey lighten-5" : string.Empty;
 }

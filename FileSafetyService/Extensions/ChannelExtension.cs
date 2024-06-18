@@ -75,14 +75,14 @@ public static class ChannelExtension
 
         await repository.Update(document);
 
-        return new ScanResultMessage(document.DemandeId, document.Id, document.TypeCode, document.StatutCode, connectionId);
+        return new ScanResultMessage(document.DemandeId, document.Id, document.StatutCode, connectionId);
     }
 
     private static async Task<bool> ScanFile(string path)
     {
         const int safetyProbability = 99;
 
-        await Task.Delay(TimeSpan.FromSeconds(5));
+        await Task.Delay(TimeSpan.FromSeconds(3));
 
         return RandomNumberGenerator.GetInt32(100) < safetyProbability;
     }

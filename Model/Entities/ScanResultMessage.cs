@@ -1,4 +1,3 @@
 namespace FileSafetyService;
 
-public record ScanResultMessage(int demandeId,
-    int DocumentId, string DocumentType, string ResultCode, string connectionId);
+public record ScanResultMessage(int DemandeId, int DocumentId, string ResultCode, string ConnectionId);

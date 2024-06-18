@@ -1,4 +1,5 @@
-@inject IDocumentRepository repository
+@inject ISnackbar Snackbar
+@inject IDocumentService Service
 @inject IDialogService dialogService
 
 <MudContainer Class="@GetBorderColor()" MaxWidth="MaxWidth.Medium">
@@ -20,10 +21,14 @@
 	[Parameter] public Document document { get; set; }
 	[Parameter] public EventCallback<Document> OnDelete { get; set; }
 
-	private string GetEtatLabel() =>
-		document.StatutCode == StatutDocument.EnCours.Code ? "En cours de vérification" :
-		document.StatutCode == StatutDocument.Corrompu.Code ? "Document corrompu" :
-		"Document validé";
+	[CascadingParameter] EpState State { get; set; }
+
+	protected override void OnInitialized()
+	{
+		State.HubConnection.On<ScanResultMessage>(DocumentNotification.ScanResult, OnNewMessage);
+	}
+
+	private string GetEtatLabel() => StatutDocument.GetLibelleByCode(document.StatutCode);
 
 	private string GetNameLabel() =>
 		document.Description == string.Empty ? "Aucun nom entré par le déposant" : document.Description;
@@ -49,7 +54,18 @@
 
 		if (!(result ?? false)) return;
 
-		await OnDelete.InvokeAsync(document);
+		await Service.Delete(document, State.HubConnection.ConnectionId);
+	}
+
+	private async Task OnNewMessage(ScanResultMessage message)
+	{
+		if (document.Id != message.DocumentId) return;
+
+		document.StatutCode = message.ResultCode;
+
+		Snackbar.Add("Le scan de votre fichier est terminé.", Severity.Info);
+		
+		await InvokeAsync(StateHasChanged);
 	}
 
 }

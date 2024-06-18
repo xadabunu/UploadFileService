@@ -20,21 +20,4 @@ app.MapDemandeEndpoints();
 
 app.MapHub<MyHub>("/huburl");
 
-app.MapPost("/scanresult", async (IHubContext<MyHub> hubContext, ScanResultMessage message) =>
-{
-    await hubContext.Clients
-        .Client(message.connectionId)
-        .SendAsync("ScanDone");
-    
-    await hubContext.Clients
-        .Client(message.connectionId)
-        .SendAsync("GetScanResult", message);
-
-    await hubContext.Clients
-        .GroupExcept(message.demandeId.ToString(), message.connectionId)
-        .SendAsync("UpdateNotification");
-
-    return Ok();
-});
-
 app.Run();

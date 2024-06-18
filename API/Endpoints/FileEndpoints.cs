@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Model.EnumerationClasses;
 
 namespace API.Endpoints;
 
@@ -12,9 +13,19 @@ public static class FileEndpoints
         app.MapGet("/document", async (IRepository<Document> repository)
             => await repository.GetAll());
 
-        app.MapPost("/document", async (IRepository<Document> repository, Document document) =>
+        app.MapPost("/document/{connectionId}", async (string connectionId, IRepository<Document> repository,
+            IHubContext<MyHub> hubContext, Document document) =>
         {
             var newDocument = await repository.Create(document);
+
+            await hubContext.Clients
+                .GroupExcept(document.DemandeId.ToString(), connectionId)
+                .SendAsync(DocumentNotification.Notify);
+
+            await hubContext.Clients
+                .Client(connectionId)
+                .SendAsync(DocumentNotification.Added, newDocument);
+
             return Created(new Uri($"http://localhost:5123/document/{newDocument.Id}"), newDocument);
         });
 
@@ -36,7 +47,6 @@ public static class FileEndpoints
                     throw new UploadFileException($"Le fichier {file.FileName} n'a pas pu être créé.");
                 }
 
-                // envoie du message au worker service via rabbitMQ
                 var message = new FileMessage
                 {
                     DemandeId = document.DemandeId,
@@ -51,11 +61,20 @@ public static class FileEndpoints
         app.MapPut("/document", async (IRepository<Document> repository, Document document)
             => await repository.Update(document) is Document updatedDocument ? Ok(updatedDocument) : NotFound());
 
-        app.MapDelete("/document/{id:int}", async (IRepository<Document> repository, int id) =>
-        {
-            await repository.Delete(id);
-            return NoContent();
-        });
+        app.MapDelete("/document/{documentId:int}/{connectionId}/{demandeId}",
+            async (IRepository<Document> repository, IHubContext<MyHub> hubContext,
+                int documentId, string connectionId, string demandeId) =>
+            {
+                await repository.Delete(documentId);
+
+                await hubContext.Clients
+                    .Client(connectionId)
+                    .SendAsync(DocumentNotification.Deleted, documentId);
+
+                await hubContext.Clients.GroupExcept(demandeId, connectionId).SendAsync(DocumentNotification.Notify);
+
+                return NoContent();
+            });
 
         app.MapGet("/projet/{demandeId:int}", async (IRepository<Document> repository, int demandeId)
             => await repository.GetProjetByDemandeId(demandeId));
@@ -65,6 +84,19 @@ public static class FileEndpoints
 
         app.MapGet("/autreDocument/{demandeId:int}", async (IRepository<Document> repository, int demandeId)
             => await repository.GetAutresDocumentsByDemandeId(demandeId));
+
+        app.MapPost("/scanresult", async (IHubContext<MyHub> hubContext, ScanResultMessage message) =>
+        {
+            await hubContext.Clients
+                .Client(message.ConnectionId)
+                .SendAsync(DocumentNotification.ScanResult, message);
+
+            await hubContext.Clients
+                .GroupExcept(message.DemandeId.ToString(), message.ConnectionId)
+                .SendAsync(DocumentNotification.Notify);
+
+            return Ok();
+        });
 
         return app;
     }

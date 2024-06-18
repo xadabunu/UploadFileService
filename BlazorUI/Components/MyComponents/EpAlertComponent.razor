@@ -1,0 +1,36 @@
+@inject NavigationManager NavManager
+
+@if (DisplayNotification)
+{
+	<MudAlert
+		NoIcon="true"
+		Severity="Severity.Warning"
+		CloseIcon="@Icons.Material.Filled.Refresh"
+		ShowCloseIcon="true"
+		CloseIconClicked="Refresh"
+		Variant="Variant.Filled"
+		Class="fixed z-100"
+		Style="bottom: 20px; right: 20px;">
+		Un autre déposant a ajouté ou supprimé des documents.
+		Rafraichissez la page pour voir les modifications.
+	</MudAlert>
+}
+
+@code {
+	private bool DisplayNotification = false;
+	
+	[CascadingParameter] EpState State { get; set; }
+
+	protected override void OnInitialized()
+	{
+		State.HubConnection.On(DocumentNotification.Notify, Notify);
+	}
+
+	private void Refresh() => NavManager.Refresh(true);
+	
+	private async Task Notify()
+	{
+		DisplayNotification = true;
+		await InvokeAsync(StateHasChanged);
+	}
+}

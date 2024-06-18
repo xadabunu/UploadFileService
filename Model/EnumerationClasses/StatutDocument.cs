@@ -5,9 +5,9 @@ public class StatutDocument
     public string Code { get; }
     public string Libelle { get; }
     
-    public static readonly StatutDocument EnCours = new("enCours", "en cours de vérification");
-    public static readonly  StatutDocument Valide = new("valide", "valide");
-    public static readonly  StatutDocument Corrompu = new("corrompu", "corrompu");
+    public static readonly StatutDocument EnCours = new("enCours", "En cours de vérification");
+    public static readonly  StatutDocument Valide = new("valide", "Valide");
+    public static readonly  StatutDocument Corrompu = new("corrompu", "Corrompu");
 
     private StatutDocument(string code, string libelle)
     {
@@ -20,5 +20,10 @@ public class StatutDocument
         yield return EnCours;
         yield return Valide;
         yield return Corrompu;
+    }
+
+    public static string GetLibelleByCode(string code)
+    {
+        return GetAll().FirstOrDefault(statut => statut.Code == code)?.Libelle ?? string.Empty;
     }
 }

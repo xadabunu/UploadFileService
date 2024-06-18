@@ -1,0 +1,34 @@
+@implements IAsyncDisposable
+
+<CascadingValue Value="this">
+	@ChildContent
+</CascadingValue>
+
+@code {
+	[Parameter] public RenderFragment ChildContent { get; set; }
+	[Parameter] public int DemandeId { get; set; }
+
+	public HubConnection? HubConnection { get; set; } =
+		new HubConnectionBuilder()
+			.WithUrl("http://localhost:5057/huburl")
+			.Build();
+
+	protected override async Task OnInitializedAsync()
+	{
+		await HubConnection.StartAsync();
+
+		if (HubConnection is { State: HubConnectionState.Connected })
+		{
+			await HubConnection.InvokeAsync("JoinGroup", DemandeId);
+		}
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		if (HubConnection is not null)
+		{
+			await HubConnection.DisposeAsync();
+		}
+	}
+
+}

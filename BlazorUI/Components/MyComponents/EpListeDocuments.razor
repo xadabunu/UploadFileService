@@ -1,5 +1,4 @@
-@using BlazorUI.Application.Model
-@inject IDocumentRepository repository
+@inject IDocumentService service
 
 @if (Documents.Any())
 {
@@ -9,49 +8,32 @@
 		{
 			<EpListeDocumentsItem
 				@key="document.Id"
-				Document="@document"
-				OnDelete="@(document =>OnDocumentDeleted(document))"/>
+				Document="@document"/>
 		}
 	</MudList>
 }
 
 @code {
-	[Parameter] public List<Document> Documents { get; set; } = [];
+	private List<Document> Documents { get; set; } = [];
 	[Parameter] public TypeDocument TypeDocument { get; set; } = default!;
 
-	[CascadingParameter] public DocumentsPageState State { get; set; }
+	[CascadingParameter] public EpState State { get; set; }
 
 	protected override async Task OnInitializedAsync()
 	{
-		if (State.HubConnection is { State: HubConnectionState.Connected })
+		Documents = (await service.GetDocumentsByType(State.DemandeId, TypeDocument.Code)).ToList();
+
+		State.HubConnection.On<int>(DocumentNotification.Deleted, async deletedId =>
 		{
-			State.HubConnection.On<ScanResultMessage>(
-				"GetScanResult", OnNewMessage);
-		}
-	}
+			Documents.RemoveAll(doc => doc.Id == deletedId);
+			await InvokeAsync(StateHasChanged);
+		});
 
-	private void OnNewMessage(ScanResultMessage message)
-	{
-		if (TypeDocument.Code != message.DocumentType) return;
-
-		var doc = Documents.SingleOrDefault(d => d.Id == message.DocumentId);
-
-		if (doc is null) return;
-
-		doc.StatutCode = message.ResultCode;
-
-		InvokeAsync(StateHasChanged);
-	}
-
-	private async void OnDocumentDeleted(Document document)
-	{
-		await repository.Delete(document.Id);
-		Documents.Remove(document);
-		await InvokeAsync(StateHasChanged);
-		await State.HubConnection.InvokeAsync(
-			"Notify",
-			State.DemandeId,
-			State.HubConnection.ConnectionId);
+		State.HubConnection.On<Document>(DocumentNotification.Added, async document =>
+		{
+			Documents.Add(document);
+			await InvokeAsync(StateHasChanged);
+		});
 	}
 
 }

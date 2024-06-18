@@ -1,6 +1,6 @@
-namespace BlazorUI.Application.Repositories;
+namespace BlazorUI.Services;
 
-public class DocumentRepository(IHttpClientFactory factory) : IDocumentRepository
+public class DocumentService(IHttpClientFactory factory) : IDocumentService
 {
     public async Task<int> Create(Document document, IBrowserFile file, string connectionId)
     {
@@ -8,7 +8,7 @@ public class DocumentRepository(IHttpClientFactory factory) : IDocumentRepositor
 
         try
         {
-            document = await WriteToDb(client, document);
+            document = await WriteToDb(client, document, connectionId);
 
             if (await CopyFileToFolder(client, document, file, connectionId))
             {
@@ -29,34 +29,15 @@ public class DocumentRepository(IHttpClientFactory factory) : IDocumentRepositor
         }
     }
 
-    public async Task<bool> Delete(int id)
+    public async Task<bool> Delete(Document document, string connectionId)
     {
         var client = factory.CreateClient("API");
 
-        var responseMessage = await client.DeleteAsync($"/document/{id}");
+        var responseMessage = await client.DeleteAsync($"/document/{document.Id}/{connectionId}/{document.DemandeId}");
 
         return responseMessage.IsSuccessStatusCode;
     }
-
-    // public async Task<IEnumerable<Document>> GetProjet(int demandeId)
-    // {
-    //     var client = factory.CreateClient("API");
-    //
-    //     return await client.GetFromJsonAsync<IEnumerable<Document>>($"/projet/{demandeId}");
-    // }
-    //
-    // public async Task<IEnumerable<Document>> GetAnnexes(int demandeId)
-    // {
-    //     var client = factory.CreateClient("API");
-    //
-    //     return [];
-    // }
-    //
-    // public async Task<IEnumerable<Document>> GetAutresDocuments(int demandeId)
-    // {
-    //     throw new NotImplementedException();
-    // }
-
+    
     public async Task<IEnumerable<Document>> GetDocumentsByType(int demandeId, string typeDocument)
     {
         var client = factory.CreateClient("API");
@@ -64,9 +45,9 @@ public class DocumentRepository(IHttpClientFactory factory) : IDocumentRepositor
         return await client.GetFromJsonAsync<IEnumerable<Document>>($"{typeDocument}/{demandeId}");
     }
 
-    private static async Task<Document?> WriteToDb(HttpClient client, Document document)
+    private static async Task<Document?> WriteToDb(HttpClient client, Document document, string connectionId)
     {
-        var response = await client.PostAsJsonAsync("/document", document);
+        var response = await client.PostAsJsonAsync($"/document/{connectionId}", document);
 
         return await response.Content.ReadFromJsonAsync<Document>();
     }
