@@ -30,7 +30,7 @@ public static class FileEndpoints
         });
 
         app.MapPost("/file/{documentId:int}",
-            async (int documentId, IFormFile file, IQueueService queueService, [FromQuery] string connectionId,
+            async (int documentId, IFormFile file, IBus bus, [FromQuery] string connectionId,
                 IRepository<Document> documentRepository) =>
             {
                 var document = await documentRepository.GetById(documentId);
@@ -55,7 +55,7 @@ public static class FileEndpoints
                     EnvoiDate = DateTime.Now
                 };
 
-                queueService.Send(message);
+                await bus.Publish(message);
             }).DisableAntiforgery();
 
         app.MapPut("/document", async (IRepository<Document> repository, Document document)

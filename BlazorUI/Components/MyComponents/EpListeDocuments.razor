@@ -31,6 +31,8 @@
 
 		State.HubConnection.On<Document>(DocumentNotification.Added, async document =>
 		{
+			if (document.TypeCode != TypeDocument.Code) return;
+
 			Documents.Add(document);
 			await InvokeAsync(StateHasChanged);
 		});
