@@ -1,7 +1,6 @@
 global using System.Data;
 global using System.Net.Http.Json;
 global using System.Security.Cryptography;
-global using RabbitMQ.Client;
 global using Dapper;
 global using FileSafetyService;
 global using FileSafetyService.Interfaces;
