@@ -32,11 +32,14 @@ public class DocumentService(IHttpClientFactory factory) : IDocumentService
     public async Task<bool> Delete(Document document, string connectionId)
     {
         var client = factory.CreateClient("API");
-        
+
         var directory = @$"C:\Eprolex\id_{document.DemandeId}\{document.TypeCode}";
         var filePath = Path.Combine(directory, document.Nom);
-        
-        File.Delete(filePath);
+
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+        }
 
         var responseMessage = await client.DeleteAsync($"/document/{document.Id}/{connectionId}/{document.DemandeId}");
 

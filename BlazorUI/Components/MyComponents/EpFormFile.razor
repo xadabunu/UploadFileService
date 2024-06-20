@@ -1,5 +1,6 @@
 @inject ILogger<EpFormFile> Logger;
 @inject IDocumentService DocumentService;
+@inject IDialogService Dialog;
 
 <MudPaper Elevation="0" Class="@GetColorClass()">
 
@@ -57,6 +58,8 @@
 	private IBrowserFile? _currentFile;
 	private string _titreDocument = string.Empty;
 
+	private long MaxFileSize = 1024 * 1024 * 500; // 500MB
+
 	private bool IsLoading = false;
 
 	[Parameter] public TypeDocument TypeDocument { get; init; } = default!;
@@ -75,6 +78,14 @@
 	private void FileChanged(IBrowserFile? file)
 	{
 		if (file is null) return;
+
+		if (file.Size > MaxFileSize)
+		{
+			Dialog.ShowMessageBox(
+				"Fichier trop volumineux",
+				$"La taille maximale d'un fichier est de {MaxFileSize /(1024 * 1024)}Mo");
+			return;
+		}
 
 		_currentFile = file;
 	}

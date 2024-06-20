@@ -30,9 +30,10 @@ public static class HttpClientExtensions
 
         /* using chunks | not working, file sent and received don't have same size*/
 
-        // const int chunkSize = 10 * 1024 * 1024; // Taille du chunk : 1 MB
+        // const int chunkSize = 10 * 1024 * 1024; // Taille du chunk : 10 MB
         // var fileStream = file.OpenReadStream(long.MaxValue);
         // var fileSize = file.Size;
+        //
         // var totalChunks = (long)Math.Ceiling((double)fileSize / chunkSize);
         //
         // var checker = fileSize;
@@ -74,13 +75,17 @@ public static class HttpClientExtensions
         //
         // return true;
 
+        /* stockage via blazor server */
+
+        const int maxFileSize = 1024 * 1024 * 500;
+
         var directory = @$"C:\Eprolex\id_{document.DemandeId}\{document.TypeCode}";
 
         Directory.CreateDirectory(directory);
 
         var filePath = Path.Combine(directory, file.Name);
 
-        await using var stream = file.OpenReadStream(long.MaxValue);
+        await using var stream = file.OpenReadStream(maxFileSize);
         await using var fileStream = new FileStream(filePath, FileMode.Create);
         await stream.CopyToAsync(fileStream);
 

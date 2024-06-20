@@ -48,9 +48,9 @@
 	private async void DeleteDocument()
 	{
 		var result = await dialogService.ShowMessageBox(
-			"Warning",
-			"Deleting can not be undone!",
-			yesText: "Delete!", cancelText: "Cancel");
+			"Attention",
+			"Cette suppression est définitive. Voulez-vous retirer le document de la demande ?",
+			yesText: "Supprimer", cancelText: "Annuler");
 
 		if (!(result ?? false)) return;
 
