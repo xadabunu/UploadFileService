@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http.Features;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMudServices(config =>
@@ -13,9 +15,15 @@ builder.Services.AddMudServices(config =>
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddHttpClient("API", client => client.BaseAddress = new Uri(builder.Configuration["ApiUrl"]));
+builder.Services.AddHttpClient("API", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ApiUrl"]);
+});
+
 builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IDemandeRepository, DemandeService>();
+
+builder.Services.Configure<FormOptions>(options => options.MultipartBodyLengthLimit = long.MaxValue);
 
 var app = builder.Build();
 

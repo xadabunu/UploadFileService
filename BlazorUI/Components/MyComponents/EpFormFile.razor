@@ -1,4 +1,3 @@
-@using Microsoft.AspNetCore.SignalR.Client
 @inject ILogger<EpFormFile> Logger;
 @inject IDocumentService DocumentService;
 
@@ -33,9 +32,17 @@
 			OnClick="UploadDocument"
 			Size="Size.Large"
 			Color="Color.Tertiary"
-			Disabled="@NoFileSelected()"
+			Disabled="@CanUpload()"
 			Class="align-self-center">
-			Ajouter le document
+			@if (IsLoading)
+			{
+				<MudProgressCircular Indeterminate="true"/>
+			}
+			else
+			{
+				<p>Ajouter le document</p>
+			}
+			
 		</MudButton>
 
 		<EpListeDocuments TypeDocument="TypeDocument"/>
@@ -50,6 +57,8 @@
 	private IBrowserFile? _currentFile;
 	private string _titreDocument = string.Empty;
 
+	private bool IsLoading = false;
+
 	[Parameter] public TypeDocument TypeDocument { get; init; } = default!;
 
 	[CascadingParameter] public EpState State { get; set; }
@@ -57,7 +66,7 @@
 	private int DemandeId { get; set; }
 	private HubConnection? HubConnection { get; set; }
 
-	protected override async Task OnInitializedAsync()
+	protected override void OnInitialized()
 	{
 		DemandeId = State.DemandeId;
 		HubConnection = State.HubConnection;
@@ -74,6 +83,8 @@
 	{
 		if (_currentFile is null) return;
 
+		IsLoading = true;
+
 		var document = new Document
 		{
 			Description = _titreDocument,
@@ -87,9 +98,10 @@
 
 		_currentFile = null;
 		_titreDocument = string.Empty;
+		IsLoading = false;
 	}
 
-	private bool NoFileSelected() => _currentFile is null;
+	private bool CanUpload() => _currentFile is null && IsLoading is false;
 	private string GetFileLabel() => _currentFile?.Name ?? "Aucun fichier séléctionné";
 	private string GetColorClass() => TypeDocument == TypeDocument.Projet ? "blue-grey lighten-5" : string.Empty;
 }

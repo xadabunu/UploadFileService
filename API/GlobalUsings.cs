@@ -14,6 +14,8 @@ global using API.Hubs;
 global using API.middlewares;
 global using FileSafetyService;
 global using MassTransit;
+global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.SignalR;
 global using Model.Entities;
+global using Model.EnumerationClasses;
 global using Model.Exceptions;

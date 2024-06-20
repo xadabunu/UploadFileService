@@ -8,9 +8,9 @@ public class DocumentService(IHttpClientFactory factory) : IDocumentService
 
         try
         {
-            document = await WriteToDb(client, document, connectionId);
+            document = await client.WriteToDb(document, connectionId);
 
-            if (await CopyFileToFolder(client, document, file, connectionId))
+            if (await client.UploadFile(document, file, connectionId))
             {
                 return document.Id;
             }
@@ -32,39 +32,21 @@ public class DocumentService(IHttpClientFactory factory) : IDocumentService
     public async Task<bool> Delete(Document document, string connectionId)
     {
         var client = factory.CreateClient("API");
+        
+        var directory = @$"C:\Eprolex\id_{document.DemandeId}\{document.TypeCode}";
+        var filePath = Path.Combine(directory, document.Nom);
+        
+        File.Delete(filePath);
 
         var responseMessage = await client.DeleteAsync($"/document/{document.Id}/{connectionId}/{document.DemandeId}");
 
         return responseMessage.IsSuccessStatusCode;
     }
-    
+
     public async Task<IEnumerable<Document>> GetDocumentsByType(int demandeId, string typeDocument)
     {
         var client = factory.CreateClient("API");
 
         return await client.GetFromJsonAsync<IEnumerable<Document>>($"{typeDocument}/{demandeId}");
-    }
-
-    private static async Task<Document?> WriteToDb(HttpClient client, Document document, string connectionId)
-    {
-        var response = await client.PostAsJsonAsync($"/document/{connectionId}", document);
-
-        return await response.Content.ReadFromJsonAsync<Document>();
-    }
-
-    private static async Task<bool> CopyFileToFolder(HttpClient client, Document document, IBrowserFile file, string connectionId)
-    {
-        var content = new MultipartFormDataContent();
-        
-        var fileContent = new StreamContent(file.OpenReadStream());
-        fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
-        content.Add(fileContent, "file", file.Name);
-
-        // var connectionContent = new StringContent(connectionId);
-        // content.Add(connectionContent);
-
-        var response = await client.PostAsync($"/file/{document.Id}?connectionId={connectionId}", content);
-
-        return response.IsSuccessStatusCode;
     }
 }

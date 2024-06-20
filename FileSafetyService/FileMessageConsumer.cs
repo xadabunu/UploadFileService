@@ -17,7 +17,7 @@ public class FileMessageConsumer(IRepository<Document> repository, IHttpClientFa
             await client.PostAsJsonAsync("/scanresult", scanResultMessage);
         }
     }
-    
+
     private async Task<ScanResultMessage> CheckDocument(Document document, string connectionId)
     {
         var path = $"C:/Eprolex/id_{document.DemandeId}/{document.TypeCode}/{document.Nom}";
@@ -31,8 +31,6 @@ public class FileMessageConsumer(IRepository<Document> repository, IHttpClientFa
             File.Delete(path);
         }
 
-        Console.WriteLine(fileIsSafe);
-        
         // if (!CheckExtension(path))
         // {
         //     Console.WriteLine("Pas un pdf.");
@@ -53,5 +51,4 @@ public class FileMessageConsumer(IRepository<Document> repository, IHttpClientFa
 
         return RandomNumberGenerator.GetInt32(100) < safetyProbability;
     }
-
 }
