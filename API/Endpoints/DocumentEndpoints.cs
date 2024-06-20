@@ -1,6 +1,6 @@
 namespace API.Endpoints;
 
-public static class FileEndpoints
+public static class DocumentEndpoints
 {
     public static WebApplication MapFileEndpoints(this WebApplication app)
     {
