@@ -31,13 +31,6 @@ public class FileMessageConsumer(IRepository<Document> repository, IHttpClientFa
             File.Delete(path);
         }
 
-        // if (!CheckExtension(path))
-        // {
-        //     Console.WriteLine("Pas un pdf.");
-        //
-        //     // conversion
-        // }
-
         await repository.Update(document);
 
         return new ScanResultMessage(document.DemandeId, document.Id, document.StatutCode, connectionId);
